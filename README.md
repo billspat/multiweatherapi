@@ -24,8 +24,8 @@ pip install multiweatherapi
 ...          'apikey': 'API_KEY',
 ...          'apisec': 'API_SECRET'}
 >>> resp = multiweatherapi.get_reading('davis', **param)
->>> resp.response # raw JSON response of the reading
->>> resp.parsed # parsed JSON response into list of dict for EnviroWeather project
+>>> resp.resp_raw # raw JSON response of the reading
+>>> resp.resp_parsed # parsed JSON response into list of dict for EnviroWeather project
 ```
 
 Refer to the respective link below for parameter and authentication requirements of weather station vendor APIs
