@@ -91,6 +91,8 @@ class OnsetReadings:
         a Request object defining the request made to the Onset server
     response : Response
         a json response from the Onset server
+    parsed_resp : list of dict
+        a parsed response from
     """
 
     def __init__(self, param: OnsetParam):
@@ -112,11 +114,12 @@ class OnsetReadings:
             # build an empty OnsetToken
             self.request = None
             self.response = None
-            self.device_info = None
-            self.measurement_settings = None
-            self.time_settings = None
-            self.locations = None
-            self.installation_metadata = None
+            self.parsed_resp = None
+            # self.device_info = None
+            # self.measurement_settings = None
+            # self.time_settings = None
+            # self.locations = None
+            # self.installation_metadata = None
 
     def get(self, sn, access_token, path_param, start_date, end_date):
         """
@@ -185,11 +188,11 @@ class OnsetReadings:
         """
         Parses the response.
         """
-        try:
-            self.device_info = self.response['device']['device_info']
-        except KeyError:
-            self.device_info = 'N/A'
+        self.parsed_resp = []
+        # try:
+        #     self.device_info = self.response['device']['device_info']
+        # except KeyError:
+        #     self.device_info = 'N/A'
         # self.timeseries = list(
         #     map(lambda x: OnsetTimeseriesRecord(x), self.response['device']['timeseries']))
-
         return self

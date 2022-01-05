@@ -54,6 +54,8 @@ class SpectrumReadings:
         a Request object defining the request made to the Spectrum server
     response : Response
         a json response from the Spectrum server
+    parsed_resp : list of dict
+        a parsed response from
     """
     def __init__(self, param: SpectrumParam):
         """
@@ -75,11 +77,12 @@ class SpectrumReadings:
             # build an empty Spectrum apikey
             self.request = None
             self.response = None
-            self.device_info = None
-            self.measurement_settings = None
-            self.time_settings = None
-            self.locations = None
-            self.installation_metadata = None
+            self.parsed_resp = None
+            # self.device_info = None
+            # self.measurement_settings = None
+            # self.time_settings = None
+            # self.locations = None
+            # self.installation_metadata = None
 
     def get(self, sn, apikey, start_date=None, end_date=None, date=None, count=None):
         """
@@ -163,10 +166,11 @@ class SpectrumReadings:
         """
         Parses the response.
         """
-        try:
-            self.device_info = self.response['device']['device_info']
-        except KeyError:
-            self.device_info = 'N/A'
+        self.parsed_resp = []
+        # try:
+        #     self.device_info = self.response['device']['device_info']
+        # except KeyError:
+        #     self.device_info = 'N/A'
         # self.timeseries = list(
         #     map(lambda x: SpectrumTimeseriesRecord(x), self.response['device']['timeseries']))
         return self

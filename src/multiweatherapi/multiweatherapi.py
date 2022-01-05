@@ -10,8 +10,8 @@ class ApiWrapper:
         self.vendor_list = ['zentra', 'spectrum', 'davis', 'onset', 'rainwise']
         self.vendor = params.get('vendor', None)
         self.params = params
-        self.response = None
-        self.parsed_resp = None
+        self.resp_raw = None
+        self.resp_parsed = None
 
         self.check_params()
 
@@ -27,16 +27,20 @@ class ApiWrapper:
                                  end_date=self.params.get('end_date', None),
                                  start_mrid=self.params.get('start_mrid', None),
                                  end_mrid=self.params.get('end_mrid', None))
-            self.response = ZentraReadings(zparam).response
-            return self.response
+            zreadings = ZentraReadings(zparam)
+            self.resp_raw = zreadings.response
+            self.resp_parsed = zreadings.parsed_resp
+            return self
         elif self.vendor == 'davis':
             dparam = DavisParam(sn=self.params.get('sn', None),
                                 apikey=self.params.get('apikey', None),
                                 apisec=self.params.get('apisec', None),
                                 start_date=self.params.get('start_date', None),
                                 end_date=self.params.get('end_date', None))
-            self.response = DavisReadings(dparam).response
-            return self.response
+            dreadings = DavisReadings(dparam)
+            self.resp_raw = dreadings.response
+            self.resp_parsed = dreadings.parsed_resp
+            return self
         elif self.vendor == 'spectrum':
             sparam = SpectrumParam(sn=self.params.get('sn', None),
                                    apikey=self.params.get('apikey', None),
@@ -44,8 +48,10 @@ class ApiWrapper:
                                    end_date=self.params.get('end_date', None),
                                    date=self.params.get('date', None),
                                    count=self.params.get('count', None))
-            self.response = SpectrumReadings(sparam).response
-            return self.response
+            sreadings = SpectrumReadings(sparam)
+            self.resp_raw = sreadings.response
+            self.resp_parsed = sreadings.parsed_resp
+            return self
         elif self.vendor == 'onset':
             oparam = OnsetParam(sn=self.params.get('sn', None),
                                 client_id=self.params.get('client_id', None),
@@ -54,8 +60,10 @@ class ApiWrapper:
                                 user_id=self.params.get('user_id', None),
                                 start_date=self.params.get('start_date', None),
                                 end_date=self.params.get('end_date', None))
-            self.response = OnsetReadings(oparam).response
-            return self.response
+            oreadings = OnsetReadings(oparam)
+            self.resp_raw = oreadings.response
+            self.resp_parsed = oreadings.parsed_resp
+            return self
 
 
 def get_reading(vendor: str, **params) -> json:

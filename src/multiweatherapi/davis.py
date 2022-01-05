@@ -92,6 +92,8 @@ class DavisReadings:
         a Request object defining the request made to the Davis server
     response : Response
         a json response from the Davis server
+    parsed_resp : list of dict
+        a parsed response from
     """
     def __init__(self, param: DavisParam):
         """
@@ -112,11 +114,12 @@ class DavisReadings:
             # build an empty DavisToken
             self.request = None
             self.response = None
-            self.device_info = None
-            self.measurement_settings = None
-            self.time_settings = None
-            self.locations = None
-            self.installation_metadata = None
+            self.parsed_resp = None
+            # self.device_info = None
+            # self.measurement_settings = None
+            # self.time_settings = None
+            # self.locations = None
+            # self.installation_metadata = None
 
     def get(self, sn, apikey, apisig, t, start_date=None, end_date=None):
         """
@@ -192,11 +195,11 @@ class DavisReadings:
         """
         Parses the response.
         """
-        try:
-            self.device_info = self.response['device']['device_info']
-        except KeyError:
-            self.device_info = 'N/A'
+        self.parsed_resp = []
+        # try:
+        #     self.device_info = self.response['device']['device_info']
+        # except KeyError:
+        #     self.device_info = 'N/A'
         # self.timeseries = list(
         #     map(lambda x: DavisTimeseriesRecord(x), self.response['device']['timeseries']))
-
         return self
