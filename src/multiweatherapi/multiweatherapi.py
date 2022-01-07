@@ -3,6 +3,7 @@ from .davis import DavisParam, DavisReadings
 from .spectrum import SpectrumParam, SpectrumReadings
 from .zentra import ZentraParam, ZentraReadings
 from .onset import OnsetParam, OnsetReadings
+from .rainwise import RainwiseParam, RainwiseReadings
 
 
 class ApiWrapper:
@@ -63,6 +64,19 @@ class ApiWrapper:
             oreadings = OnsetReadings(oparam)
             self.resp_raw = oreadings.response
             self.resp_parsed = oreadings.parsed_resp
+            return self
+        elif self.vendor == 'rainwise':
+            rparam = RainwiseParam(username=self.params.get('username', None),
+                                   sid=self.params.get('sid', None),
+                                   pid=self.params.get('pid', None),
+                                   mac=self.params.get('mac', None),
+                                   ret_form=self.params.get('ret_form', None),
+                                   interval=self.params.get('interval', None),
+                                   start_date=self.params.get('start_date', None),
+                                   end_date=self.params.get('end_date', None))
+            rreadings = RainwiseReadings(rparam)
+            self.resp_raw = rreadings.response
+            self.resp_parsed = rreadings.parsed_resp
             return self
 
 
