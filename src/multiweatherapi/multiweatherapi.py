@@ -4,11 +4,12 @@ from .spectrum import SpectrumParam, SpectrumReadings
 from .zentra import ZentraParam, ZentraReadings
 from .onset import OnsetParam, OnsetReadings
 from .rainwise import RainwiseParam, RainwiseReadings
+from .campbell import CampbellParam, CampbellReadings
 
 
 class ApiWrapper:
     def __init__(self, params: dict):
-        self.vendor_list = ['zentra', 'spectrum', 'davis', 'onset', 'rainwise']
+        self.vendor_list = ['zentra', 'spectrum', 'davis', 'onset', 'rainwise', 'campbell']
         self.vendor = params.get('vendor', None)
         self.params = params
         self.resp_raw = None
@@ -77,6 +78,17 @@ class ApiWrapper:
             rreadings = RainwiseReadings(rparam)
             self.resp_raw = rreadings.response
             self.resp_parsed = rreadings.parsed_resp
+            return self
+        elif self.vendor == 'campbell':
+            cparam = CampbellParam(username=self.params.get('username', None),
+                                   user_passwd=self.params.get('user_passwd', None),
+                                   station_id=self.params.get('station_id', None),
+                                   station_lid=self.params.get('station_lid', None),
+                                   start_date=self.params.get('start_date', None),
+                                   end_date=self.params.get('end_date', None))
+            creadings = CampbellReadings(cparam)
+            self.resp_raw = creadings.response
+            self.resp_parsed = creadings.parsed_resp
             return self
 
 
