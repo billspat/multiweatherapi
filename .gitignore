@@ -1,0 +1,8 @@
+.vscode/settings.json
+src/get_samples.py
+src/multiweatherapi/__pycache__/__init__.cpython-39.pyc
+src/multiweatherapi/__pycache__/davis.cpython-39.pyc
+src/multiweatherapi/__pycache__/multiweatherapi.cpython-39.pyc
+src/multiweatherapi/__pycache__/onset.cpython-39.pyc
+src/multiweatherapi/__pycache__/spectrum.cpython-39.pyc
+src/multiweatherapi/__pycache__/zentra.cpython-39.pyc
