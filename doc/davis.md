@@ -83,7 +83,7 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
    | api-signature | API Signature                              | str       | Query          | Y        |
    | t             | Unix timestamp when the query is submitted | int       | Query          | Y        |
    
-   - Sample output [JSON File](https://michiganstate.sharepoint.com/sites/Geography-EnviroweatherTeam/_layouts/15/download.aspx?UniqueId=244da747aeba49abb5c9d2504fa5fc56&e=ZQDxlP) may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
+   - Sample output [JSON File](https://michiganstate.sharepoint.com/sites/Geography-EnviroweatherTeam/_layouts/15/download.aspx?UniqueId=a80bb057384c4a6ba95f89c7f46fc160&e=cJT5Em) may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
    
 1. Get historic data 
 
@@ -106,7 +106,7 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
    | start-timestamp | Unix timestamp marking the beginning of the data requested. Must be earlier than end-timestamp but not more than 24 hours earlier. | int       | Query          | Y        |
    | end-timestamp   | Unix timestamp marking the end of the data requested. Must be later than start-timestamp but not more than 24 hours later. | int       | Query          | Y        |
    
-   - Sample output [JSON File](https://michiganstate.sharepoint.com/sites/Geography-EnviroweatherTeam/_layouts/15/download.aspx?UniqueId=244da747aeba49abb5c9d2504fa5fc56&e=ZQDxlP) may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
+   - Sample output [JSON File](https://michiganstate.sharepoint.com/sites/Geography-EnviroweatherTeam/_layouts/15/download.aspx?UniqueId=91c9b9303d9f453897e04104f7cca03f&e=yNpYKQ) may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
    
 3. Addtional Endpoint information
 
