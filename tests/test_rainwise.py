@@ -200,3 +200,13 @@ def test_rainwise_missing_mac(setup):
         readings = multiweatherapi.get_reading(**parms)    
 
     assert '"username", "sid", "pid", "mac" parameters must be included.' in str(error.value), 'Missing mac was not reported' 
+
+def test_rainwise_start_date_after_end_date(setup):
+    parms = setup('rainwise_good')
+    temp = parms['start_date']
+    parms['start_date'] = parms['end_date']
+    parms['end_date'] = temp
+
+    print('start date = ' + str(parms['start_date']) + ', end date = ' + str(parms['end_date']))
+    with pytest.raises(Exception) as error:
+        readings = multiweatherapi.get_reading(**parms)       

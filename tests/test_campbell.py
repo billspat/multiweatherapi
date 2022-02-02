@@ -201,3 +201,13 @@ def test_campbell_good_identifier(setup):
     readings = multiweatherapi.get_reading(**parms)
     assert readings.resp_raw is not None, 'multiweatherapi did not return any raw readings...'
     assert readings.resp_parsed is not None, 'multiweatherapi did not return any parsed readings...'
+
+def test_campbell_start_date_after_end_date(setup):
+    parms = setup('campbell_good')
+    temp = parms['start_date']
+    parms['start_date'] = parms['end_date']
+    parms['end_date'] = temp
+
+    print('start date = ' + str(parms['start_date']) + ', end date = ' + str(parms['end_date']))
+    with pytest.raises(Exception) as error:
+        readings = multiweatherapi.get_reading(**parms)    

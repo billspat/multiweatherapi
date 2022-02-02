@@ -144,3 +144,13 @@ def test_davis_string_start_date(setup):
         readings = multiweatherapi.get_reading(**parms)  
 
     assert 'start_date must be datetime.datetime instance' in str(error.value), 'multiweatherapi did not report that a string start date was invalid'    
+
+def test_davis_start_date_after_end_date(setup):
+    parms = setup('davis_good')
+    temp = parms['start_date']
+    parms['start_date'] = parms['end_date']
+    parms['end_date'] = temp
+
+    print('start date = ' + str(parms['start_date']) + ', end date = ' + str(parms['end_date']))
+    with pytest.raises(Exception) as error:
+        readings = multiweatherapi.get_reading(**parms)       

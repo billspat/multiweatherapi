@@ -84,3 +84,17 @@ def test_zentra_missing_token(setup):
         readings = multiweatherapi.get_reading(**parms)
 
     assert '"sn" and "token" parameters must both be included' in str(error.value), 'multiweatherapi did not report missing token parm'    
+
+def test_zentra_start_date_after_end_date(setup):
+    # Wait 70 seconds to get around Zentra's one call per minute restriction.
+    time.sleep(70)
+    parms = setup('zentra_good')
+    temp = parms['start_date']
+    parms['start_date'] = parms['end_date']
+    parms['end_date'] = temp
+
+    print('start date = ' + str(parms['start_date']) + ', end date = ' + str(parms['end_date']))
+    with pytest.raises(Exception) as error:
+        readings = multiweatherapi.get_reading(**parms)
+
+    

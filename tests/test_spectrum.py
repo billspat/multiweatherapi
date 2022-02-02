@@ -81,3 +81,13 @@ def test_spectrum_missing_apikey(setup):
         readings = multiweatherapi.get_reading(**parms)
 
     assert '"sn" and "apikey" parameters must both be included.' in str(error.value), 'multiweather did not report missing apikey'    
+
+def test_spectrum_start_date_after_end_date(setup):
+    parms = setup('spectrum_good')
+    temp = parms['start_date']
+    parms['start_date'] = parms['end_date']
+    parms['end_date'] = temp
+
+    print('start date = ' + str(parms['start_date']) + ', end date = ' + str(parms['end_date']))
+    with pytest.raises(Exception) as error:
+        readings = multiweatherapi.get_reading(**parms)   

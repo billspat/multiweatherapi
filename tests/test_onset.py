@@ -216,3 +216,13 @@ def test_onset_empty_string_access_token(setup):
         readings = multiweatherapi.get_reading(**parms) 
 
     assert '"sn" and "access_token" parameters must both be included.' in str(error.value), 'access_token with value of the empty string was not reported as missing'     
+
+def test_onset_start_date_after_end_date(setup):
+    parms = setup('onset_good')
+    temp = parms['start_date']
+    parms['start_date'] = parms['end_date']
+    parms['end_date'] = temp
+
+    print('start date = ' + str(parms['start_date']) + ', end date = ' + str(parms['end_date']))
+    with pytest.raises(Exception) as error:
+        readings = multiweatherapi.get_reading(**parms)       
