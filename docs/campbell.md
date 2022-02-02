@@ -72,7 +72,7 @@ To create, following request/call needs to be made:
    | Method         | GET                                                          |
    | URL            | https://api.campbellcloud.io/api_v2/measurement/timeseries/{station_id}/{epoch_start}/{epoch_end}/{measurement_name_1},{measurement_name_2} |
    | Path Parameter | {station_id} - `legacy_id` from the station details (for non-v3 endpoint), {epoch_start} - start date/time in epoch time (milliseconds), {epoch_end} - end date/time in epoch time (milliseconds), {measurement_name_1} - `name` from the station information, {measurement_name_2} - `name` from the station information (optional) |
-   - Start and End date/time is expected to be in `Local Time` zone
+   - Start and End date/time is expected to be in ***Local Time zone***
    > NOTE: End-user may add as many measurements as one would like. Ensure that the end-user is using a comma between each measurement one is is listing.
    
 4. Addtional Endpoint information
