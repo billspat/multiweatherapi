@@ -30,12 +30,12 @@ pip install multiweatherapi
 
 Refer to the respective link below for parameter and authentication requirements of weather station vendor APIs
 
-- [Zentra](doc/zentra.md)
-- [Spectrum](doc/spectrum.md)
-- [Onset](doc/onset.md)
-- [Davis](doc/davis.md)
-- [Rainwise](doc/rainwise.md)
-- [Campbell](doc/campbell.md) 
+- [Zentra](docs/zentra.md)
+- [Spectrum](docs/spectrum.md)
+- [Onset](docs/onset.md)
+- [Davis](docs/davis.md)
+- [Rainwise](docs/rainwise.md)
+- [Campbell](docs/campbell.md) 
 
 ### Supported Python Versions
 
