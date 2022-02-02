@@ -78,6 +78,7 @@ To create, following request/call needs to be made:
 4. Addtional Endpoint information
 
    - Full information about the Campbell Cloud API can be found at https://docs.campbellcloud.io/api/. This site includes all available API calls, their correct use and formatting.
+   - Additionally product manual may be located at https://help.campbellsci.com/cloud-en/home.htm.
 
 ### Python Binding
 
