@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from requests import Session, Request
 
@@ -50,13 +50,13 @@ class CampbellParam:
         self.end_date = end_date
         self.json_file = json_file
 
-        self.check_params()
-        self.format_time()
-        self.get_auth()
-        self.get_ids()
-        self.get_measurements()
+        self.__check_params()
+        self.__format_time()
+        self.__get_auth()
+        self.__get_ids()
+        self.__get_measurements()
 
-    def check_params(self):
+    def __check_params(self):
         if self.username is None or not isinstance(self.username, str):
             raise Exception('username must be specified and only str type is supported')
         if self.user_passwd is None or not isinstance(self.user_passwd, str):
@@ -70,13 +70,22 @@ class CampbellParam:
             raise Exception('end_date must be datetime.datetime instance')
         print("user credentials: {} type - {}".format(type(self.credentials), self.credentials))
 
-    def format_time(self):
+    def __utc_to_local(self):
+        print('UTC Start date: {}'.format(self.start_date))
+        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
+        print('Local time Start date: {}'.format(self.start_date))
+        print('UTC End date: {}'.format(self.end_date))
+        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        print('Local time End date: {}'.format(self.end_date))
+
+    def __format_time(self):
+        self.__utc_to_local()
         self.start_date = int(self.start_date.timestamp()*1000) if self.start_date \
             else int(datetime.now().timestamp()*1000)
         self.end_date = int(self.end_date.timestamp()*1000) if self.end_date \
             else int(datetime.now().timestamp()*1000)
 
-    def get_auth(self):
+    def __get_auth(self):
         print('username: \"{}\"'.format(self.username))
         print('user_password: \"{}\"'.format(self.user_passwd))
         request = Request('POST',
@@ -95,7 +104,7 @@ class CampbellParam:
         self.access_token = response['access_token']
         print('access_token: \"{}\"'.format(self.access_token))
 
-    def get_ids(self):
+    def __get_ids(self):
         request = Request('GET',
                           url='https://api.campbellcloud.io/api_v2/user/session',
                           headers={
@@ -113,7 +122,7 @@ class CampbellParam:
         print('kc_id is \"{}\"'.format(self.kc_id))
         print('organization_id is \"{}\"'.format(self.organization_id))
 
-    def get_measurements(self):
+    def __get_measurements(self):
         path_param = {'organization_id': self.organization_id, 'station_id': self.station_id}
         request = Request('GET',
                           url='https://api.campbellcloud.io/v3/campbell-cloud/organizations'
@@ -156,9 +165,9 @@ class CampbellReadings:
         """
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.parse()
+            self.__parse()
         elif param.station_lid and param.access_token:
-            self.get(param.station_lid, param.start_date, param.end_date, param.measurements, param.access_token)
+            self.__get(param.station_lid, param.start_date, param.end_date, param.measurements, param.access_token)
         elif param.station_lid or param.access_token:
             raise Exception('"station_id" and "access_token" parameters must both be included.')
         else:
@@ -172,7 +181,7 @@ class CampbellReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def get(self, station_lid, epoch_start, epoch_end, measurements, access_token):
+    def __get(self, station_lid, epoch_start, epoch_end, measurements, access_token):
         """
         Gets a device readings using a GET request to the Campbell API.
         Wraps build and parse functions.
@@ -189,12 +198,12 @@ class CampbellReadings:
         access_token : str
             The user's access token for API authorization
         """
-        self.build(station_lid, epoch_start, epoch_end, measurements, access_token)
-        self.make_request()
-        self.parse()
+        self.__build(station_lid, epoch_start, epoch_end, measurements, access_token)
+        self.__make_request()
+        self.__parse()
         return self
 
-    def build(self, station_lid, epoch_start, epoch_end, measurements, access_token):
+    def __build(self, station_lid, epoch_start, epoch_end, measurements, access_token):
         """
         Gets a device readings using a GET request to the Campbell API.
         Parameters
@@ -223,7 +232,7 @@ class CampbellReadings:
                                    'Authorization': "Bearer " + access_token}).prepare()
         return self
 
-    def make_request(self):
+    def __make_request(self):
         """
         Sends a token request to the Campbell API and stores the response.
         """
@@ -238,7 +247,7 @@ class CampbellReadings:
         self.response = resp.json()
         return self
 
-    def parse(self):
+    def __parse(self):
         """
         Parses the response.
         """
