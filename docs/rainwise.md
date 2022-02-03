@@ -31,6 +31,9 @@ Rainwise weather station API does not require real-time authentication process; 
    | edate    | End date and time of the range for the data                  | datetime  | Query          | N        |
    
    - Sample output [JSON File](https://michiganstate.sharepoint.com/sites/Geography-EnviroweatherTeam/_layouts/15/download.aspx?UniqueId=b15e7ca07c2b48aca994aaaaebfe7ba0&e=LOoBjP) may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=w3tnnc).
+   - Start and End date/time is expected to be in ***Local Time zone***
+   
+   > NOTE: If `sdate` and `edate` are **not** set, it returns the **last 24 hours**’ worth of data from the current date and time, otherwise the data between the specified ranges is returned. The date range for data is **limited to 7 days** for an interval of **1 minute**. This limit scales with the interval so with an interval of **15 minutes**, the limit will be **105 days**.
    
    
    
@@ -52,8 +55,8 @@ Rainwise weather station API does not require real-time authentication process; 
 | mac        | MAC of the weather station                                   | str      | Y        |
 | ret_form   | Returns data as XML or JSON, If omitted data is returned as XML | str      | N        |
 | interval   | Data aggregation interval, 1,5,10,15,30 or 60min (default 1min) | int      | N        |
-| start_date | Start date and time. If omitted set to current time          | datetime | N        |
-| end_date   | End date and time. If omitted set to current time            | datetime | N        |
+| start_date | Start date and time. If omitted set to current time (UTC expected) | datetime | N        |
+| end_date   | End date and time. If omitted set to current time (UTC expected) | datetime | N        |
 
 - Usage
 
