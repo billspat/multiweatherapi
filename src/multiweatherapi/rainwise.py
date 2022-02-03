@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 from requests import Session, Request
 
@@ -20,9 +20,9 @@ class RainwiseParam:
         Values xml or json; returns the data as JSON or XML
     interval: int, optional (default 1 min)
         Data aggregation interval, 1, 5, 10, 15, 30, 60 minute intervals
-    start_date : datetime
+    start_date : datetime (UTC expected)
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-    end_date : datetime
+    end_date : datetime (UTC expected)
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     json_file : str, optional
         The path to a local json file to parse.
@@ -39,16 +39,10 @@ class RainwiseParam:
         self.end_date = end_date
         self.json_file = json_file
 
-        self.check_params()
-        self.format_time()
+        self.__check_params()
+        self.__format_time()
 
-    def format_time(self):
-        self.start_date = self.start_date.strftime('%Y-%m-%d %H:%M:%S') if self.start_date \
-            else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.end_date = self.end_date.strftime('%Y-%m-%d %H:%M:%S') if self.end_date \
-            else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    def check_params(self):
+    def __check_params(self):
         if self.start_date and not isinstance(self.start_date, datetime):
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
@@ -59,6 +53,21 @@ class RainwiseParam:
             raise Exception('sid and pid parameters must be included and same value')
         if self.ret_form.lower() != 'json' and self.ret_form.lower() != 'xml':
             raise Exception('ret_form must either be json or xml')
+
+    def __utc_to_local(self):
+        print('UTC Start date: {}'.format(self.start_date))
+        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
+        print('Local time Start date: {}'.format(self.start_date))
+        print('UTC End date: {}'.format(self.end_date))
+        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        print('Local time End date: {}'.format(self.end_date))
+
+    def __format_time(self):
+        self.__utc_to_local()
+        self.start_date = self.start_date.strftime('%Y-%m-%d %H:%M:%S') if self.start_date \
+            else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.end_date = self.end_date.strftime('%Y-%m-%d %H:%M:%S') if self.end_date \
+            else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
 class RainwiseReadings:
@@ -84,10 +93,10 @@ class RainwiseReadings:
         """
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.parse()
+            self.__parse()
         elif param.username and param.sid and param.pid and param.mac:
-            self.get(param.username, param.sid, param.pid, param.mac, param.ret_form, param.interval,
-                     param.start_date, param.end_date)
+            self.__get(param.username, param.sid, param.pid, param.mac, param.ret_form, param.interval,
+                       param.start_date, param.end_date)
         elif param.username or param.sid or param.pid or param.mac:
             raise Exception('"username", "sid", "pid", "mac" parameters must be included.')
         else:
@@ -101,7 +110,7 @@ class RainwiseReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def get(self, username, sid, pid, mac, ret_form, interval, start_date=None, end_date=None):
+    def __get(self, username, sid, pid, mac, ret_form, interval, start_date=None, end_date=None):
         """
         Gets a device readings using a GET request to the Rainwise API.
         Wraps build and parse functions.
@@ -124,12 +133,12 @@ class RainwiseReadings:
         end_date : datetime
             Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
         """
-        self.build(username, sid, pid, mac, ret_form, interval, start_date, end_date)
-        self.make_request()
-        self.parse()
+        self.__build(username, sid, pid, mac, ret_form, interval, start_date, end_date)
+        self.__make_request()
+        self.__parse()
         return self
 
-    def build(self, username, sid, pid, mac, ret_form, interval, start_date=None, end_date=None):
+    def __build(self, username, sid, pid, mac, ret_form, interval, start_date=None, end_date=None):
         """
         Gets a device readings using a GET request to the Rainwise API.
         Parameters
@@ -163,7 +172,7 @@ class RainwiseReadings:
                                        'edate': end_date}).prepare()
         return self
 
-    def make_request(self):
+    def __make_request(self):
         """
         Sends a token request to the Rainwise API and stores the response.
         """
@@ -178,7 +187,7 @@ class RainwiseReadings:
         self.response = resp.json()
         return self
 
-    def parse(self):
+    def __parse(self):
         """
         Parses the response.
         """
