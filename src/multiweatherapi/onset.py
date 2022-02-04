@@ -38,11 +38,11 @@ class OnsetParam:
         self.end_date = end_date
         self.json_file = json_file
 
-        self.check_params()
-        self.format_time()
-        self.get_auth()
+        self.__check_params()
+        self.__format_time()
+        self.__get_auth()
 
-    def check_params(self):
+    def __check_params(self):
         if self.start_date and not isinstance(self.start_date, datetime):
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
@@ -55,13 +55,14 @@ class OnsetParam:
             raise Exception('userId must be specified and only str type is supported')
         self.path_param = {'format': self.ret_form, 'userId': self.user_id}
 
-    def format_time(self):
-        self.start_date = self.start_date.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') if self.start_date \
-            else datetime.now().astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-        self.end_date = self.end_date.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') if self.end_date \
-            else datetime.now().astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+    def __format_time(self):
+        # self.start_date = self.start_date.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') if self.start_date \
+        self.start_date = self.start_date.strftime('%Y-%m-%d %H:%M:%S') if self.start_date \
+            else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        self.end_date = self.end_date.strftime('%Y-%m-%d %H:%M:%S') if self.end_date \
+            else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
 
-    def get_auth(self):
+    def __get_auth(self):
         print('client_id: \"{}\"'.format(self.client_id))
         print('client_secret: \"{}\"'.format(self.client_secret))
         request = Request('POST',
@@ -105,9 +106,9 @@ class OnsetReadings:
         """
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.parse()
+            self.__parse()
         elif param.sn and param.access_token:
-            self.get(param.sn, param.access_token, param.path_param, param.start_date, param.end_date)
+            self.__get(param.sn, param.access_token, param.path_param, param.start_date, param.end_date)
         elif param.sn or param.access_token:
             raise Exception('"sn" and "access_token" parameters must both be included.')
         else:
@@ -121,7 +122,7 @@ class OnsetReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def get(self, sn, access_token, path_param, start_date, end_date):
+    def __get(self, sn, access_token, path_param, start_date, end_date):
         """
         Gets a device readings using a GET request to the Onset API.
         Wraps build and parse functions.
@@ -138,12 +139,12 @@ class OnsetReadings:
         end_date : str
             Return readings with timestamps ≤ end_date.
         """
-        self.build(sn, access_token, path_param, start_date, end_date)
-        self.make_request()
-        self.parse()
+        self.__build(sn, access_token, path_param, start_date, end_date)
+        self.__make_request()
+        self.__parse()
         return self
 
-    def build(self, sn, access_token, path_param, start_date, end_date):
+    def __build(self, sn, access_token, path_param, start_date, end_date):
         """
         Gets a device readings using a GET request to the Onset API.
         Parameters
@@ -169,7 +170,7 @@ class OnsetReadings:
                                        'end_date_time': end_date}).prepare()
         return self
 
-    def make_request(self):
+    def __make_request(self):
         """
         Sends a token request to the Onset API and stores the response.
         """
@@ -184,7 +185,7 @@ class OnsetReadings:
         self.response = resp.json()
         return self
 
-    def parse(self):
+    def __parse(self):
         """
         Parses the response.
         """
