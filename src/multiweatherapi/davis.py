@@ -2,7 +2,7 @@ import collections
 import hashlib
 import hmac
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from requests import Session, Request
 
 
@@ -17,9 +17,9 @@ class DavisParam:
         The customer's access key (v2)
     apisec : str
         API security that is used to compute the hash
-    start_date : datetime
+    start_date : datetime (UTC expected)
         Return readings with timestamps ≥ start_time. Specify start_time in str. (2021-08-01, 2021-08-01)
-    end_date : datetime
+    end_date : datetime (UTC expected)
         Return readings with timestamps ≤ end_time. Specify end_time in str. (2021-08-31, 2021-08-31)
     json_file : str, optional
         The path to a local json file to parse.
@@ -36,17 +36,13 @@ class DavisParam:
         self.end_date = end_date
         self.json_file = json_file
 
-        self.check_params()
-        self.format_time()
+        self.__check_params()
+        self.__format_time()
 
         if json_file is None:
-            self.compute_signature()
+            self.__compute_signature()
 
-    def format_time(self):
-        self.start_date = int(self.start_date.timestamp()) if self.start_date else None
-        self.end_date = int(self.end_date.timestamp()) if self.end_date else None
-
-    def check_params(self):
+    def __check_params(self):
         if self.start_date and not isinstance(self.start_date, datetime):
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
@@ -56,7 +52,20 @@ class DavisParam:
         if self.sn is None:
             raise Exception('"sn" parameter must be included.')
 
-    def compute_signature(self):
+    def __utc_to_local(self):
+        print('UTC Start date: {}'.format(self.start_date))
+        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
+        print('Local time Start date: {}'.format(self.start_date))
+        print('UTC End date: {}'.format(self.end_date))
+        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        print('Local time End date: {}'.format(self.end_date))
+
+    def __format_time(self):
+        self.__utc_to_local()
+        self.start_date = int(self.start_date.timestamp()) if self.start_date else None
+        self.end_date = int(self.end_date.timestamp()) if self.end_date else None
+
+    def __compute_signature(self):
         params = {
             'api-key': self.apikey,
             'station-id': self.sn,
@@ -105,9 +114,9 @@ class DavisReadings:
         """
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.parse()
+            self.__parse()
         elif param.sn and param.apikey:
-            self.get(param.sn, param.apikey, param.apisig, param.t, param.start_date, param.end_date)
+            self.__get(param.sn, param.apikey, param.apisig, param.t, param.start_date, param.end_date)
         elif param.sn or param.apikey:
             raise Exception('"sn" and "apikey" parameters must both be included.')
         else:
@@ -121,7 +130,7 @@ class DavisReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def get(self, sn, apikey, apisig, t, start_date=None, end_date=None):
+    def __get(self, sn, apikey, apisig, t, start_date=None, end_date=None):
         """
         Gets a device readings using a GET request to the Davis API.
         Wraps build and parse functions.
@@ -140,12 +149,12 @@ class DavisReadings:
         end_date : int, optional
             Return readings with timestamps ≤ end_date.
         """
-        self.build(sn, apikey, apisig, t, start_date, end_date)
-        self.make_request()
-        self.parse()
+        self.__build(sn, apikey, apisig, t, start_date, end_date)
+        self.__make_request()
+        self.__parse()
         return self
 
-    def build(self, sn, apikey, apisig, t, start_date=None, end_date=None):
+    def __build(self, sn, apikey, apisig, t, start_date=None, end_date=None):
         """
         Gets a device readings using a GET request to the Davis API.
         Parameters
@@ -179,7 +188,7 @@ class DavisReadings:
                                            'api-signature': apisig}).prepare()
         return self
 
-    def make_request(self):
+    def __make_request(self):
         """
         Sends a token request to the Davis API and stores the response.
         """
@@ -191,7 +200,7 @@ class DavisReadings:
         self.response = resp.json()
         return self
 
-    def parse(self):
+    def __parse(self):
         """
         Parses the response.
         """
