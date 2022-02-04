@@ -116,13 +116,15 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
 
 - Required Parameters
 
-| Name       | Contents              | Type     |
-| ---------- | --------------------- | -------- |
-| sn         | Station ID            | str      |
-| apikey     | Client-specific value | str      |
-| apisec     | Client-specific value | str      |
-| start_date | Start date and time   | datetime |
-| end_date   | End date and time     | datetime |
+| Name       | Contents                           | Type     |
+| ---------- | ---------------------------------- | -------- |
+| sn         | Station ID                         | str      |
+| apikey     | Client-specific value              | str      |
+| apisec     | Client-specific value              | str      |
+| start_date | Start date and time (UTC expected) | datetime |
+| end_date   | End date and time (UTC expected)   | datetime |
+
+> NOTE: For date/time range to correctly work, both parameters should be in UTC timezone
 
 - Usage
 
