@@ -1,6 +1,6 @@
 import json
 from requests import Session, Request
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class SpectrumParam:
@@ -34,15 +34,27 @@ class SpectrumParam:
         self.count = count
         self.json_file = json_file
 
-        self.check_params()
+        self.__check_params()
+        self.__utc_to_local()
 
-    def check_params(self):
+    def __check_params(self):
         if self.start_date and not isinstance(self.start_date, datetime):
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
             raise Exception('end_date must be datetime.datetime instance')
         if self.date and not isinstance(self.date, datetime):
             raise Exception('date must be datetime.datetime instance')
+
+    def __utc_to_local(self):
+        print('UTC Start date: {}'.format(self.start_date))
+        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
+        print('Local time Start date: {}'.format(self.start_date))
+        print('UTC End date: {}'.format(self.end_date))
+        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        print('Local time End date: {}'.format(self.end_date))
+        print('UTC date: {}'.format(self.date))
+        self.date = self.date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.date else None
+        print('Local time End date: {}'.format(self.end_date))
 
 
 class SpectrumReadings:
@@ -68,9 +80,9 @@ class SpectrumReadings:
         """
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.parse()
+            self.__parse()
         elif param.sn and param.apikey:
-            self.get(param.sn, param.apikey, param.start_date, param.end_date, param.date, param.count)
+            self.__get(param.sn, param.apikey, param.start_date, param.end_date, param.date, param.count)
         elif param.sn or param.apikey:
             raise Exception('"sn" and "apikey" parameters must both be included.')
         else:
@@ -84,7 +96,7 @@ class SpectrumReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def get(self, sn, apikey, start_date=None, end_date=None, date=None, count=None):
+    def __get(self, sn, apikey, start_date=None, end_date=None, date=None, count=None):
         """
         Gets a device readings using a GET request to the Spectrum API.
         Wraps build and parse functions.
@@ -105,12 +117,12 @@ class SpectrumReadings:
         count : int
             Get a specific number of recent sensor data records for a specific customer device
         """
-        self.build(sn, apikey, start_date, end_date, date, count)
-        self.make_request()
-        self.parse()
+        self.__build(sn, apikey, start_date, end_date, date, count)
+        self.__make_request()
+        self.__parse()
         return self
 
-    def build(self, sn, apikey, start_date=None, end_date=None, date=None, count=None):
+    def __build(self, sn, apikey, start_date=None, end_date=None, date=None, count=None):
         """
         Gets a device readings using a GET request to the Spectrum API.
         Parameters
@@ -150,7 +162,7 @@ class SpectrumReadings:
 
         return self
 
-    def make_request(self):
+    def __make_request(self):
         """
         Sends a token request to the Spectrum API and stores the response.
         """
@@ -162,7 +174,7 @@ class SpectrumReadings:
         self.response = resp.json()
         return self
 
-    def parse(self):
+    def __parse(self):
         """
         Parses the response.
         """
