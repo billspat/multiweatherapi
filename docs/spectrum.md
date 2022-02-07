@@ -98,12 +98,14 @@ Spectrum weather station API requires an ***API Key*** that is a customer-specif
 
 - Required Parameters
 
-| Name       | Contents                            | Type     |
-| ---------- | ----------------------------------- | -------- |
-| sn         | Device Serial Number (serialNumber) | str      |
-| apikey     | API Key (customerApiKey)            | str      |
-| start_date | Start date and time                 | datetime |
-| end_date   | End date and time                   | datetime |
+| Name       | Contents                                     | Type     |
+| ---------- | -------------------------------------------- | -------- |
+| sn         | Device Serial Number (serialNumber)          | str      |
+| apikey     | API Key (customerApiKey)                     | str      |
+| start_date | Start date and time (UTC time zone expected) | datetime |
+| end_date   | End date and time (UTC time zone expected)   | datetime |
+
+> NOTE: start_date & end_date must be in UTC time zone for Python binding to correctly interpret date/time
 
 - Usage
 
