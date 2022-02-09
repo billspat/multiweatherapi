@@ -68,6 +68,8 @@ class CampbellParam:
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
             raise Exception('end_date must be datetime.datetime instance')
+        if self.start_date and self.end_date and (self.start_date > self.end_date):
+            raise Exception('start_date must be earlier than end_date')
         print("user credentials: {} type - {}".format(type(self.credentials), self.credentials))
 
     def __utc_to_local(self):
