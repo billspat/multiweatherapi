@@ -42,6 +42,8 @@ class SpectrumParam:
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
             raise Exception('end_date must be datetime.datetime instance')
+        if self.start_date and self.end_date and (self.start_date > self.end_date):
+            raise Exception('start_date must be earlier than end_date')
         if self.date and not isinstance(self.date, datetime):
             raise Exception('date must be datetime.datetime instance')
 
