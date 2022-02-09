@@ -47,6 +47,8 @@ class OnsetParam:
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
             raise Exception('end_date must be datetime.datetime instance')
+        if self.start_date and self.end_date and (self.start_date > self.end_date):
+            raise Exception('start_date must be earlier than end_date')
         if self.client_id is None or self.client_secret is None:
             raise Exception('client_id and client_secret parameters must be included')
         if self.ret_form is None or self.ret_form != 'JSON':
