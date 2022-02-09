@@ -95,3 +95,7 @@ class ApiWrapper:
 def get_reading(vendor: str, **params) -> json:
     params['vendor'] = vendor
     return ApiWrapper(params).get_reading()
+
+
+def get_version() -> str:
+    return 'v0.0.12'
