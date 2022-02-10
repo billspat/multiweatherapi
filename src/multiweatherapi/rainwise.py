@@ -25,10 +25,12 @@ class RainwiseParam:
     end_date : datetime (UTC expected)
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     json_file : str, optional
-        The path to a local json file to parse.
+        The path to a local json file to parse
+    binding_ver : str
+        Python binding version
     """
     def __init__(self, username=None, sid=None, pid=None, mac=None, ret_form='json', interval=1,
-                 start_date=None, end_date=None, json_file=None):
+                 start_date=None, end_date=None, json_file=None, binding_ver=None):
         self.username = username
         self.sid = sid
         self.pid = pid
@@ -38,6 +40,7 @@ class RainwiseParam:
         self.start_date = start_date
         self.end_date = end_date
         self.json_file = json_file
+        self.binding_ver = binding_ver
 
         self.__check_params()
         self.__format_time()
@@ -93,6 +96,18 @@ class RainwiseReadings:
         param : RainwiseParam
             RainwiseParam object that contains Rainwise API parameters
         """
+        self.debug_info = {
+            'username': param.username,
+            'sid': param.sid,
+            'pid': param.pid,
+            'mac': param.mac,
+            'ret_form': param.ret_form,
+            'interval': param.interval,
+            'start_date': param.start_date,
+            'end_date': param.end_date,
+            'json_str': param.json_file,
+            'binding_ver': param.binding_ver
+        }
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__parse()
@@ -172,6 +187,10 @@ class RainwiseReadings:
                                        'interval': interval,
                                        'sdate': start_date,
                                        'edate': end_date}).prepare()
+
+        self.debug_info['http_method'] = self.request.method
+        self.debug_info['url'] = self.request.url
+        self.debug_info['headers'] = self.request.headers
         return self
 
     def __make_request(self):
@@ -187,6 +206,8 @@ class RainwiseReadings:
             raise Exception(
                 'Error: Device serial number entered does not exist')
         self.response = resp.json()
+        self.debug_info['response'] = self.response
+        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
     def __parse(self):
