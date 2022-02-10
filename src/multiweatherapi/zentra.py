@@ -39,7 +39,7 @@ class ZentraParam:
         self.start_date = start_date
         self.end_date_org = end_date
         self.end_date = end_date
-        self.conversion_msg = None
+        self.conversion_msg = ''
         self.start_mrid = start_mrid
         self.end_mrid = end_mrid
         self.json_file = json_file
