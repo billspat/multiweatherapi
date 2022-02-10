@@ -24,9 +24,11 @@ class OnsetParam:
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     json_file : str, optional
         The path to a local json file to parse.
+    binding_ver : str
+        Python binding version
     """
     def __init__(self, sn=None, client_id=None, client_secret=None, ret_form=None, user_id=None, start_date=None,
-                 end_date=None, json_file=None):
+                 end_date=None, json_file=None, binding_ver=None):
         self.sn = sn
         self.client_id = client_id
         self.client_secret = client_secret
@@ -37,6 +39,7 @@ class OnsetParam:
         self.start_date = start_date
         self.end_date = end_date
         self.json_file = json_file
+        self.binding_ver = binding_ver
 
         self.__check_params()
         self.__format_time()
@@ -96,6 +99,8 @@ class OnsetReadings:
         a json response from the Onset server
     parsed_resp : list of dict
         a parsed response from
+    debug_info : dict
+        a dict structure consist of parameter name and values
     """
 
     def __init__(self, param: OnsetParam):
@@ -106,6 +111,15 @@ class OnsetReadings:
         param : OnsetParam
             OnsetParam object that contains Onset API parameters
         """
+        self.debug_info = {
+            'sn': param.sn,
+            'access_token': param.access_token,
+            'path_param': param.path_param,
+            'start_date': param.start_date,
+            'end_date': param.end_date,
+            'json_str': param.json_file,
+            'binding_ver': param.binding_ver
+        }
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__parse()
@@ -170,6 +184,9 @@ class OnsetReadings:
                                params={'loggers': sn,
                                        'start_date_time': start_date,
                                        'end_date_time': end_date}).prepare()
+        self.debug_info['http_method'] = self.request.method
+        self.debug_info['url'] = self.request.url
+        self.debug_info['headers'] = self.request.headers
         return self
 
     def __make_request(self):
@@ -185,6 +202,8 @@ class OnsetReadings:
             raise Exception(
                 'Error: Device serial number entered does not exist')
         self.response = resp.json()
+        self.debug_info['response'] = self.response
+        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
     def __parse(self):
