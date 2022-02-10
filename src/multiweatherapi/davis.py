@@ -35,7 +35,9 @@ class DavisParam:
         self.t = int(datetime.now().timestamp())
         # self.start_date = int(time.mktime(time.strptime(start_date, "%m/%d/%Y %H:%M"))) if start_date else None
         # self.end_date = int(time.mktime(time.strptime(end_date, "%m/%d/%Y %H:%M"))) if end_date else None
+        self.start_date_org = start_date
         self.start_date = start_date
+        self.end_date_org = end_date
         self.end_date = end_date
         self.json_file = json_file
         self.binding_ver = binding_ver
@@ -125,7 +127,9 @@ class DavisReadings:
             'apikey': param.apikey,
             'apisig': param.apisig,
             't': param.t,
+            'start_date_org': param.start_date_org,
             'start_date': param.start_date,
+            'end_date_org': param.end_date_org,
             'end_date': param.end_date,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
