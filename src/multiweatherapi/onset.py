@@ -129,6 +129,7 @@ class OnsetReadings:
             'start_date': param.start_date,
             'end_date_org': param.end_date_org,
             'end_date': param.end_date,
+            'conversion_msg': param.conversion_msg,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }
