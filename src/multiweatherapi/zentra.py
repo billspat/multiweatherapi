@@ -12,10 +12,16 @@ class ZentraParam:
         The serial number of the device
     token : str
         The user's access token
+    start_date_org : datetime
+        Stores datetime object passed initially
     start_date : datetime
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
+    end_date_org : datetime
+        Stores datetime object passed initially
     end_date : datetime
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
+    conversion_msg : str
+        Stores time conversion message
     start_mrid : int, optional
         Return readings with mrid ≥ start_mrid.
     end_mrid : int, optional
@@ -33,6 +39,7 @@ class ZentraParam:
         self.start_date = start_date
         self.end_date_org = end_date
         self.end_date = end_date
+        self.conversion_msg = None
         self.start_mrid = start_mrid
         self.end_mrid = end_mrid
         self.json_file = json_file
@@ -51,10 +58,15 @@ class ZentraParam:
 
     def __utc_to_local(self):
         print('UTC Start date: {}'.format(self.start_date))
+        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
         self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
         print('Local time Start date: {}'.format(self.start_date))
+        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
+
         print('UTC End date: {}'.format(self.end_date))
+        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
         self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
         print('Local time End date: {}'.format(self.end_date))
 
     def __format_time(self):
@@ -95,6 +107,7 @@ class ZentraReadings:
             'start_date': param.start_date,
             'end_date_org': param.end_date_org,
             'end_date': param.end_date,
+            'conversion_msg': param.conversion_msg,
             'start_mrid': param.start_mrid,
             'end_mrid': param.end_mrid,
             'json_str': param.json_file,
