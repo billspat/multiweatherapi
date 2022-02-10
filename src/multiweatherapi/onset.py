@@ -36,7 +36,9 @@ class OnsetParam:
         self.ret_form = ret_form
         self.user_id = user_id
         self.path_param = None
+        self.start_date_org = start_date
         self.start_date = start_date
+        self.end_date_org = end_date
         self.end_date = end_date
         self.json_file = json_file
         self.binding_ver = binding_ver
@@ -115,7 +117,9 @@ class OnsetReadings:
             'sn': param.sn,
             'access_token': param.access_token,
             'path_param': param.path_param,
+            'start_date_org': param.start_date_org,
             'start_date': param.start_date,
+            'end_date_org': param.end_date_org,
             'end_date': param.end_date,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
