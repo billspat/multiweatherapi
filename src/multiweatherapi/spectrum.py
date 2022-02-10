@@ -45,7 +45,7 @@ class SpectrumParam:
         self.end_date = end_date
         self.date_org = date
         self.date = date
-        self.conversion_msg = None
+        self.conversion_msg = ''
         self.count = count
         self.json_file = json_file
         self.binding_ver = binding_ver
