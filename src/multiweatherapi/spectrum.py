@@ -31,8 +31,11 @@ class SpectrumParam:
                  binding_ver=None):
         self.sn = sn
         self.apikey = apikey
+        self.start_date_org = start_date
         self.start_date = start_date
+        self.end_date_org = end_date
         self.end_date = end_date
+        self.date_org = date
         self.date = date
         self.count = count
         self.json_file = json_file
@@ -89,8 +92,11 @@ class SpectrumReadings:
         self.debug_info = {
             'sn': param.sn,
             'apikey': param.apikey,
+            'start_date_org': param.start_date_org,
             'start_date': param.start_date,
+            'end_date_org': param.end_date_org,
             'end_date': param.end_date,
+            'date_org': param.date_org,
             'date': param.date,
             'count': param.count,
             'json_str': param.json_file,
