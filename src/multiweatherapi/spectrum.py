@@ -24,8 +24,11 @@ class SpectrumParam:
         Get a specific number of recent sensor data records for a specific customer device
     json_file : str, optional
         The path to a local json file to parse.
+    binding_ver : str
+        Python binding version
     """
-    def __init__(self, sn=None, apikey=None, start_date=None, end_date=None, date=None, count=None, json_file=None):
+    def __init__(self, sn=None, apikey=None, start_date=None, end_date=None, date=None, count=None, json_file=None,
+                 binding_ver=None):
         self.sn = sn
         self.apikey = apikey
         self.start_date = start_date
@@ -33,6 +36,7 @@ class SpectrumParam:
         self.date = date
         self.count = count
         self.json_file = json_file
+        self.binding_ver = binding_ver
 
         self.__check_params()
         self.__utc_to_local()
@@ -70,6 +74,8 @@ class SpectrumReadings:
         a json response from the Spectrum server
     parsed_resp : list of dict
         a parsed response from
+    debug_info : dict
+        a dict structure consist of parameter name and values
     """
     def __init__(self, param: SpectrumParam):
         """
@@ -80,6 +86,16 @@ class SpectrumReadings:
         param: SpectrumParam
             SpectrumParam object that contains Spectrum API parameters
         """
+        self.debug_info = {
+            'sn': param.sn,
+            'apikey': param.apikey,
+            'start_date': param.start_date,
+            'end_date': param.end_date,
+            'date': param.date,
+            'count': param.count,
+            'json_str': param.json_file,
+            'binding_ver': param.binding_ver
+        }
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__parse()
@@ -162,6 +178,9 @@ class SpectrumReadings:
                                    url='https://api.specconnect.net:6703/api/Customer/GetData',
                                    params={'customerApiKey': apikey, 'serialNumber': sn}).prepare()
 
+        self.debug_info['http_method'] = self.request.method
+        self.debug_info['url'] = self.request.url
+        self.debug_info['headers'] = self.request.headers
         return self
 
     def __make_request(self):
@@ -174,6 +193,8 @@ class SpectrumReadings:
             raise Exception(
                 'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
         self.response = resp.json()
+        self.debug_info['response'] = self.response
+        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
     def __parse(self):
