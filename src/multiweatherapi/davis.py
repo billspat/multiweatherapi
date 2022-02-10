@@ -17,10 +17,16 @@ class DavisParam:
         The customer's access key (v2)
     apisec : str
         API security that is used to compute the hash
+    start_date_org : datetime
+        Stores datetime object passed initially
     start_date : datetime (UTC expected)
         Return readings with timestamps ≥ start_time. Specify start_time in str. (2021-08-01, 2021-08-01)
+    end_date_org : datetime
+        Stores datetime object passed initially
     end_date : datetime (UTC expected)
         Return readings with timestamps ≤ end_time. Specify end_time in str. (2021-08-31, 2021-08-31)
+    conversion_msg : str
+        Stores time conversion message
     json_file : str, optional
         The path to a local json file to parse
     binding_ver : str
@@ -39,6 +45,7 @@ class DavisParam:
         self.start_date = start_date
         self.end_date_org = end_date
         self.end_date = end_date
+        self.conversion_msg = ''
         self.json_file = json_file
         self.binding_ver = binding_ver
 
@@ -62,10 +69,15 @@ class DavisParam:
 
     def __utc_to_local(self):
         print('UTC Start date: {}'.format(self.start_date))
+        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
         self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
         print('Local time Start date: {}'.format(self.start_date))
+        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
+
         print('UTC End date: {}'.format(self.end_date))
+        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
         self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
         print('Local time End date: {}'.format(self.end_date))
 
     def __format_time(self):
@@ -131,6 +143,7 @@ class DavisReadings:
             'start_date': param.start_date,
             'end_date_org': param.end_date_org,
             'end_date': param.end_date,
+            'conversion_msg': param.conversion_msg,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }
