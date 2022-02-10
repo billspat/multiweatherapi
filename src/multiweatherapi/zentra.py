@@ -29,7 +29,9 @@ class ZentraParam:
                  json_file=None, binding_ver=None):
         self.sn = sn
         self.token = token
+        self.start_date_org = start_date
         self.start_date = start_date
+        self.end_date_org = end_date
         self.end_date = end_date
         self.start_mrid = start_mrid
         self.end_mrid = end_mrid
@@ -89,7 +91,9 @@ class ZentraReadings:
         self.debug_info = {
             'sn': param.sn,
             'token': param.token,
+            'start_date_org': param.start_date_org,
             'start_date': param.start_date,
+            'end_date_org': param.end_date_org,
             'end_date': param.end_date,
             'start_mrid': param.start_mrid,
             'end_mrid': param.end_mrid,
