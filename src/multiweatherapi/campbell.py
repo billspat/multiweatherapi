@@ -48,7 +48,9 @@ class CampbellParam:
         self.station_id = station_id
         self.station_lid = station_lid
 
+        self.start_date_org = start_date
         self.start_date = start_date
+        self.end_date_org = end_date
         self.end_date = end_date
         self.json_file = json_file
         self.binding_ver = binding_ver
@@ -172,7 +174,9 @@ class CampbellReadings:
         """
         self.debug_info = {
             'station_lid': param.station_lid,
+            'start_date_org': param.start_date_org,
             'start_date': param.start_date,
+            'end_date_org': param.end_date_org,
             'end_date': param.end_date,
             'measurements': param.measurements,
             'access_token': param.access_token,
