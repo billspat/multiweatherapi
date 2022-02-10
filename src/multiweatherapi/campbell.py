@@ -31,10 +31,12 @@ class CampbellParam:
     end_date : datetime
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     json_file : str, optional
-        The path to a local json file to parse.
+        The path to a local json file to parse
+    binding_ver : str
+        Python binding version
     """
     def __init__(self, username=None, user_passwd=None, station_id=None,
-                 station_lid=None, start_date=None, end_date=None, json_file=None):
+                 station_lid=None, start_date=None, end_date=None, json_file=None, binding_ver=None):
 
         self.username = username
         self.user_passwd = user_passwd
@@ -49,6 +51,7 @@ class CampbellParam:
         self.start_date = start_date
         self.end_date = end_date
         self.json_file = json_file
+        self.binding_ver = binding_ver
 
         self.__check_params()
         self.__format_time()
@@ -155,6 +158,8 @@ class CampbellReadings:
         a json response from the Campbell server
     parsed_resp : list of dict
         a parsed response from
+    debug_info : dict
+        a dict structure consist of parameter name and values
     """
 
     def __init__(self, param: CampbellParam):
@@ -165,6 +170,15 @@ class CampbellReadings:
         param : CampbellParam
             CampbellParam object that contains Campbell API parameters
         """
+        self.debug_info = {
+            'station_lid': param.station_lid,
+            'start_date': param.start_date,
+            'end_date': param.end_date,
+            'measurements': param.measurements,
+            'access_token': param.access_token,
+            'json_str': param.json_file,
+            'binding_ver': param.binding_ver
+        }
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__parse()
@@ -232,6 +246,9 @@ class CampbellReadings:
                                    '/{station_id}/{epoch_start}/{epoch_end}/{measurements}'.format(**path_param),
                                headers={
                                    'Authorization': "Bearer " + access_token}).prepare()
+        self.debug_info['http_method'] = self.request.method
+        self.debug_info['url'] = self.request.url
+        self.debug_info['headers'] = self.request.headers
         return self
 
     def __make_request(self):
@@ -247,6 +264,8 @@ class CampbellReadings:
             raise Exception(
                 'Error: Device serial number entered does not exist')
         self.response = resp.json()
+        self.debug_info['response'] = self.response
+        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
     def __parse(self):
