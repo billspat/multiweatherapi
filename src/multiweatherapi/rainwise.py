@@ -47,7 +47,7 @@ class RainwiseParam:
         self.start_date = start_date
         self.end_date_org = end_date
         self.end_date = end_date
-        self.conversion_msg = None
+        self.conversion_msg = ''
 
         self.json_file = json_file
         self.binding_ver = binding_ver
