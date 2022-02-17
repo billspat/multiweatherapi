@@ -211,3 +211,13 @@ def test_campbell_start_date_after_end_date(setup):
     print('start date = ' + str(parms['start_date']) + ', end date = ' + str(parms['end_date']))
     with pytest.raises(Exception) as error:
         readings = multiweatherapi.get_reading(**parms)    
+
+def test_campbell_one_day(setup):
+    parms = setup('campbell_good')
+    parms['station_id'] = parms.pop('sn')
+    parms['station_lid'] = parms.pop('client_id')
+    parms['user_passwd'] = parms.pop('password')    
+    parms['start_date'] = datetime(2022, 2, 16, 13, 00)
+    parms['end_date'] = datetime(2022, 2, 16, 14, 30)
+    readings = multiweatherapi.get_reading(**parms)
+    print(readings.resp_raw)        

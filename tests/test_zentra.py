@@ -97,4 +97,12 @@ def test_zentra_start_date_after_end_date(setup):
     with pytest.raises(Exception) as error:
         readings = multiweatherapi.get_reading(**parms)
 
-    
+def test_zentra_one_day(setup):
+    parms = setup('zentra_good')
+    parms['station_id'] = parms.pop('sn')
+    parms['station_lid'] = parms.pop('client_id')
+    parms['user_passwd'] = parms.pop('password')    
+    parms['start_date'] = datetime(2022, 2, 16, 13, 00)
+    parms['end_date'] = datetime(2022, 2, 16, 14, 30)
+    readings = multiweatherapi.get_reading(**parms)
+    print(readings.resp_raw)     

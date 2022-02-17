@@ -34,6 +34,7 @@ def test_onset_good_identifier(setup):
     parms = setup('onset_good')
 
     readings = multiweatherapi.get_reading(**parms)
+    print(readings.resp_raw)
     assert readings.resp_raw is not None, 'multiweatherapi did not return any raw readings...'
     assert readings.resp_parsed is not None, 'multiweatherapi did not return any parsed readings...'   
 
@@ -225,4 +226,11 @@ def test_onset_start_date_after_end_date(setup):
 
     print('start date = ' + str(parms['start_date']) + ', end date = ' + str(parms['end_date']))
     with pytest.raises(Exception) as error:
-        readings = multiweatherapi.get_reading(**parms)       
+        readings = multiweatherapi.get_reading(**parms)      
+
+def test_onset_one_day(setup):
+    parms = setup('onset_good')
+    parms['start_date'] = datetime(2022, 2, 16, 13, 00)
+    parms['end_date'] = datetime(2022, 2, 16, 14, 30)
+    readings = multiweatherapi.get_reading(**parms)
+    print(readings.resp_raw)

@@ -67,7 +67,7 @@ def test_davis_apisec_None_value(setup):
     assert '"apikey" and "apisec" parameters must both be included.' in str(error.value), 'multiweatherapi did not report an None apisec as missing.'
 
 def test_davis_good_identifier(setup):
-    parms = setup('campbell_good')
+    parms = setup('davis_good')
 
     readings = multiweatherapi.get_reading(**parms)
     assert readings.resp_raw is not None, 'multiweatherapi did not return any raw readings...'
