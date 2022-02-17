@@ -18,10 +18,16 @@ class OnsetParam:
         The format data should be returned in. Currently only JSON is supported.
     user_id : str
         numeric ID of the user account This can be pulled from the HOBOlink URL: www.hobolink.com/users/<user_id>
+    start_date_org : datetime
+        Stores datetime object passed initially
     start_date : datetime
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
+    end_date_org : datetime
+        Stores datetime object passed initially
     end_date : datetime
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
+    conversion_msg : str
+        Stores time conversion message
     json_file : str, optional
         The path to a local json file to parse.
     binding_ver : str
@@ -40,6 +46,7 @@ class OnsetParam:
         self.start_date = start_date
         self.end_date_org = end_date
         self.end_date = end_date
+        self.conversion_msg = ''
         self.json_file = json_file
         self.binding_ver = binding_ver
 
@@ -68,6 +75,7 @@ class OnsetParam:
             else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         self.end_date = self.end_date.strftime('%Y-%m-%d %H:%M:%S') if self.end_date \
             else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        self.conversion_msg += 'Onset API utilize UTC timestamp as is thus does not require conversion'
 
     def __get_auth(self):
         print('client_id: \"{}\"'.format(self.client_id))
@@ -121,6 +129,7 @@ class OnsetReadings:
             'start_date': param.start_date,
             'end_date_org': param.end_date_org,
             'end_date': param.end_date,
+            'conversion_msg': param.conversion_msg,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }

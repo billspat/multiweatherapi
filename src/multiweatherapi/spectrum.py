@@ -12,14 +12,22 @@ class SpectrumParam:
         The serial number of the device
     apikey : str
         The customer's access key
+    start_date_org : datetime
+        Stores datetime object passed initially
     start_date : datetime
         Return readings for a specific customer device for a specific date-time range.
         (e.g., 2021-08-01 00:00)
+    end_date_org : datetime
+        Stores datetime object passed initially
     end_date : datetime
         Return readings for a specific customer device for a specific date-time range.
         (e.g., 2021-08-31 23:59)
+    date_org : datetime
+        Stores datetime object passed initially
     date : datetime
         Return readings for a specific date. (e.g., 2021-08-01)
+    conversion_msg : str
+        Stores time conversion message
     count : int
         Get a specific number of recent sensor data records for a specific customer device
     json_file : str, optional
@@ -37,6 +45,7 @@ class SpectrumParam:
         self.end_date = end_date
         self.date_org = date
         self.date = date
+        self.conversion_msg = ''
         self.count = count
         self.json_file = json_file
         self.binding_ver = binding_ver
@@ -56,14 +65,22 @@ class SpectrumParam:
 
     def __utc_to_local(self):
         print('UTC Start date: {}'.format(self.start_date))
+        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
         self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
         print('Local time Start date: {}'.format(self.start_date))
+        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
+
         print('UTC End date: {}'.format(self.end_date))
+        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
         self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
         print('Local time End date: {}'.format(self.end_date))
+        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
+
         print('UTC date: {}'.format(self.date))
+        self.conversion_msg += 'UTC date passed as parameter: {}'.format(self.date) + " \\ "
         self.date = self.date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.date else None
-        print('Local time End date: {}'.format(self.end_date))
+        print('Local time date: {}'.format(self.date))
+        self.conversion_msg += 'Local time date after conversion: {}'.format(self.end_date) + " \\ "
 
 
 class SpectrumReadings:
@@ -98,6 +115,7 @@ class SpectrumReadings:
             'end_date': param.end_date,
             'date_org': param.date_org,
             'date': param.date,
+            'conversion_msg': param.conversion_msg,
             'count': param.count,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
