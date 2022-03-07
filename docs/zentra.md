@@ -48,7 +48,7 @@ Zentra weather station API requires an ***API Key*** that is an user token each 
 | token      | API Key (Client-specific value)                              | str      |
 | start_date | Start date and time (UTC time zone expected)                 | datetime |
 | end_date   | End date and time (UTC time zone expected)                   | datetime |
-| tz         | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | Str      |
+| tz         | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | str      |
 | start_mrid | Start mrid of mrid range                                     | int      |
 | end_mrid   | End mrid of mrid range                                       | int      |
 
