@@ -1,4 +1,5 @@
 import json
+import pytz
 from requests import Session, Request
 from datetime import datetime, timezone
 
@@ -28,6 +29,8 @@ class SpectrumParam:
         Return readings for a specific date. (e.g., 2021-08-01)
     conversion_msg : str
         Stores time conversion message
+    tz : str
+        Time zone information
     count : int
         Get a specific number of recent sensor data records for a specific customer device
     json_file : str, optional
@@ -35,8 +38,8 @@ class SpectrumParam:
     binding_ver : str
         Python binding version
     """
-    def __init__(self, sn=None, apikey=None, start_date=None, end_date=None, date=None, count=None, json_file=None,
-                 binding_ver=None):
+    def __init__(self, sn=None, apikey=None, start_date=None, end_date=None, date=None, tz=None, count=None,
+                 json_file=None, binding_ver=None):
         self.sn = sn
         self.apikey = apikey
         self.start_date_org = start_date
@@ -45,6 +48,7 @@ class SpectrumParam:
         self.end_date = end_date
         self.date_org = date
         self.date = date
+        self.tz = tz
         self.conversion_msg = ''
         self.count = count
         self.json_file = json_file
@@ -54,6 +58,7 @@ class SpectrumParam:
         self.__utc_to_local()
 
     def __check_params(self):
+        tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
         if self.start_date and not isinstance(self.start_date, datetime):
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
@@ -62,25 +67,44 @@ class SpectrumParam:
             raise Exception('start_date must be earlier than end_date')
         if self.date and not isinstance(self.date, datetime):
             raise Exception('date must be datetime.datetime instance')
+        if self.tz and (self.tz not in tz_option):
+            raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
+        if (self.start_date or self.end_date or self.date) and not self.tz:
+            raise Exception('if start_date or end_date is specified, tz must be specified')
 
     def __utc_to_local(self):
-        print('UTC Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
+        tzlist = {
+            'HT': 'US/Hawaii',
+            'AT': 'US/Alaska',
+            'PT': 'US/Pacific',
+            'MT': 'US/Mountain',
+            'CT': 'US/Central',
+            'ET': 'US/Eastern'
+        }
+        print('UTC Start date: {}, local time zone: {}'.format(self.start_date, self.tz))
+        self.conversion_msg += \
+            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_date, self.tz) + " \\ "
+        # self.start_date=self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
+        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.start_date else None
         print('Local time Start date: {}'.format(self.start_date))
         self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
 
-        print('UTC End date: {}'.format(self.end_date))
-        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
-        print('Local time End date: {}'.format(self.end_date))
+        print('UTC End date: {}, local time zone: {}'.format(self.end_date, self.tz))
+        self.conversion_msg += \
+            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_date, self.tz) + " \\ "
+        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.end_date else None
         self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
+        print('Local time End date: {}'.format(self.end_date))
 
-        print('UTC date: {}'.format(self.date))
-        self.conversion_msg += 'UTC date passed as parameter: {}'.format(self.date) + " \\ "
-        self.date = self.date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.date else None
-        print('Local time date: {}'.format(self.date))
-        self.conversion_msg += 'Local time date after conversion: {}'.format(self.end_date) + " \\ "
+        print('UTC date: {}, local time zone: {}'.format(self.date, self.tz))
+        self.conversion_msg += \
+            'UTC date passed as parameter: {}, local time zone: {}'.format(self.date, self.tz) + " \\ "
+        self.date = self.date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.date else None
+        self.conversion_msg += 'Local time date after conversion: {}'.format(self.date) + " \\ "
+        print('Local time End date: {}'.format(self.date))
 
 
 class SpectrumReadings:
