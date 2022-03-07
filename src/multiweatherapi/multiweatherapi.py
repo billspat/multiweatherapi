@@ -32,6 +32,7 @@ class ApiWrapper:
                                  end_date=self.params.get('end_date', None),
                                  start_mrid=self.params.get('start_mrid', None),
                                  end_mrid=self.params.get('end_mrid', None),
+                                 tz=self.params.get('tz', None),
                                  binding_ver=__version__)
             zreadings = ZentraReadings(zparam)
             self.resp_raw = zreadings.response
@@ -56,6 +57,7 @@ class ApiWrapper:
                                    start_date=self.params.get('start_date', None),
                                    end_date=self.params.get('end_date', None),
                                    date=self.params.get('date', None),
+                                   tz=self.params.get('tz', None),
                                    count=self.params.get('count', None),
                                    binding_ver=__version__)
             sreadings = SpectrumReadings(sparam)
@@ -86,6 +88,7 @@ class ApiWrapper:
                                    interval=self.params.get('interval', None),
                                    start_date=self.params.get('start_date', None),
                                    end_date=self.params.get('end_date', None),
+                                   tz=self.params.get('tz', None),
                                    binding_ver=__version__)
             rreadings = RainwiseReadings(rparam)
             self.resp_raw = rreadings.response
