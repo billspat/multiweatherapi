@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import json
+import pytz
 from requests import Session, Request
 
 
@@ -22,6 +23,8 @@ class ZentraParam:
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     conversion_msg : str
         Stores time conversion message
+    tz : str
+        Time zone information
     start_mrid : int, optional
         Return readings with mrid ≥ start_mrid.
     end_mrid : int, optional
@@ -31,7 +34,7 @@ class ZentraParam:
     binding_ver : str
         Python binding version
     """
-    def __init__(self, sn=None, token=None, start_date=None, end_date=None, start_mrid=None, end_mrid=None,
+    def __init__(self, sn=None, token=None, start_date=None, end_date=None, tz=None, start_mrid=None, end_mrid=None,
                  json_file=None, binding_ver=None):
         self.sn = sn
         self.token = token
@@ -39,6 +42,7 @@ class ZentraParam:
         self.start_date = start_date
         self.end_date_org = end_date
         self.end_date = end_date
+        self.tz = tz
         self.conversion_msg = ''
         self.start_mrid = start_mrid
         self.end_mrid = end_mrid
@@ -49,23 +53,42 @@ class ZentraParam:
         self.__format_time()
 
     def __check_params(self):
+        tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
         if self.start_date and not isinstance(self.start_date, datetime):
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
             raise Exception('end_date must be datetime.datetime instance')
         if self.start_date and self.end_date and (self.start_date > self.end_date):
             raise Exception('start_date must be earlier than end_date')
+        if self.tz and (self.tz not in tz_option):
+            raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
+        if (self.start_date or self.end_date) and not self.tz:
+            raise Exception('if start_date or end_date is specified, tz must be specified')
 
     def __utc_to_local(self):
-        print('UTC Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
+        tzlist = {
+            'HT': 'US/Hawaii',
+            'AT': 'US/Alaska',
+            'PT': 'US/Pacific',
+            'MT': 'US/Mountain',
+            'CT': 'US/Central',
+            'ET': 'US/Eastern'
+        }
+        print('UTC Start date: {}, local time zone: {}'.format(self.start_date, self.tz))
+        self.conversion_msg += \
+            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_date, self.tz) + " \\ "
+        # self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) \
+        #     if self.start_date else None
+        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.start_date else None
         print('Local time Start date: {}'.format(self.start_date))
         self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
 
-        print('UTC End date: {}'.format(self.end_date))
-        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        print('UTC End date: {}, local time zone: {}'.format(self.end_date, self.tz))
+        self.conversion_msg += \
+            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_date, self.tz) + " \\ "
+        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.end_date else None
         self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
         print('Local time End date: {}'.format(self.end_date))
 
