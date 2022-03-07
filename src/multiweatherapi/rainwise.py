@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import json
+import pytz
 from requests import Session, Request
 
 
@@ -28,6 +29,8 @@ class RainwiseParam:
         Stores datetime object passed initially
     end_date : datetime (UTC expected)
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
+    tz : str
+        Time zone information
     conversion_msg : str
         Stores time conversion message
     json_file : str, optional
@@ -36,7 +39,7 @@ class RainwiseParam:
         Python binding version
     """
     def __init__(self, username=None, sid=None, pid=None, mac=None, ret_form='json', interval=1,
-                 start_date=None, end_date=None, json_file=None, binding_ver=None):
+                 start_date=None, end_date=None, tz=None, json_file=None, binding_ver=None):
         self.username = username
         self.sid = sid
         self.pid = pid
@@ -47,6 +50,7 @@ class RainwiseParam:
         self.start_date = start_date
         self.end_date_org = end_date
         self.end_date = end_date
+        self.tz = tz
         self.conversion_msg = ''
 
         self.json_file = json_file
@@ -56,12 +60,17 @@ class RainwiseParam:
         self.__format_time()
 
     def __check_params(self):
+        tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
         if self.start_date and not isinstance(self.start_date, datetime):
             raise Exception('start_date must be datetime.datetime instance')
         if self.end_date and not isinstance(self.end_date, datetime):
             raise Exception('end_date must be datetime.datetime instance')
         if self.start_date and self.end_date and (self.start_date > self.end_date):
             raise Exception('start_date must be earlier than end_date')
+        if self.tz and (self.tz not in tz_option):
+            raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
+        if (self.start_date or self.end_date) and not self.tz:
+            raise Exception('if start_date or end_date is specified, tz must be specified')
         if self.username is None or self.mac is None or self.username != self.mac:
             raise Exception('username and mac parameters must be included and same value')
         if self.sid is None or self.pid is None or self.sid != self.pid:
@@ -70,15 +79,30 @@ class RainwiseParam:
             raise Exception('ret_form must either be json or xml')
 
     def __utc_to_local(self):
-        print('UTC Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
+        tzlist = {
+            'HT': 'US/Hawaii',
+            'AT': 'US/Alaska',
+            'PT': 'US/Pacific',
+            'MT': 'US/Mountain',
+            'CT': 'US/Central',
+            'ET': 'US/Eastern'
+        }
+        print('UTC Start date: {}, local time zone: {}'.format(self.start_date, self.tz))
+        self.conversion_msg += \
+            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_date, self.tz) + " \\ "
+        # self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) \
+        #     if self.start_date else None
+        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.start_date else None
         print('Local time Start date: {}'.format(self.start_date))
         self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
 
-        print('UTC End date: {}'.format(self.end_date))
-        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        print('UTC End date: {}, local time zone: {}'.format(self.end_date, self.tz))
+        self.conversion_msg += \
+            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_date, self.tz) + " \\ "
+        # self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.end_date else None
         print('Local time End date: {}'.format(self.end_date))
         self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
 
