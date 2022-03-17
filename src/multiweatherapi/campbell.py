@@ -87,15 +87,19 @@ class CampbellParam:
     def __utc_to_local(self):
         print('UTC Start date: {}'.format(self.start_date))
         self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
-        print('Local time Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
+        self.conversion_msg += 'Campbell utilizes Unix Epoch, just added explicit UTC timezone' + " \\ "
+        # self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) \
+        #     if self.start_date else None
+        self.start_date = self.start_date.replace(tzinfo=timezone.utc) if self.start_date else None
+        print('Explicit UTC time Start date: {}'.format(self.start_date))
+        self.conversion_msg += 'Explicit UTC time start date after conversion: {}'.format(self.start_date) + " \\ "
 
         print('UTC End date: {}'.format(self.end_date))
         self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
-        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
-        print('Local time End date: {}'.format(self.end_date))
+        # self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
+        self.end_date = self.end_date.replace(tzinfo=timezone.utc) if self.end_date else None
+        self.conversion_msg += 'Explicit UTC time end date after conversion: {}'.format(self.end_date) + " \\ "
+        print('Explicit UTC time End date: {}'.format(self.end_date))
 
     def __format_time(self):
         self.__utc_to_local()
