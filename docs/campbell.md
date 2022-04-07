@@ -84,14 +84,14 @@ To create, following request/call needs to be made:
 
 - Required Parameters
 
-| Name        | Contents                                                   | Type     |
-| ----------- | ---------------------------------------------------------- | -------- |
-| username    | Login username for Campbell Cloud Web Portal               | str      |
-| user_passwd | Login password for Campbell Cloud Web Portal               | str      |
-| station_id  | `id` from the station details (for v3 endpoint)            | str      |
-| station_lid | `legacy_id` from the station details (for non-v3 endpoint) | str      |
-| start_date  | Start date and time                                        | datetime |
-| end_date    | End date and time                                          | datetime |
+| Name           | Contents                                                   | Type     |
+| -------------- | ---------------------------------------------------------- | -------- |
+| username       | Login username for Campbell Cloud Web Portal               | str      |
+| user_passwd    | Login password for Campbell Cloud Web Portal               | str      |
+| station_id     | `id` from the station details (for v3 endpoint)            | str      |
+| station_lid    | `legacy_id` from the station details (for non-v3 endpoint) | str      |
+| start_datetime | Start date and time                                        | datetime |
+| end_datetime   | End date and time                                          | datetime |
 
 - Usage
 
@@ -101,8 +101,8 @@ params = {
     'user_passwd': LOGIN_PASSWORD,
     'station_id': STATION_ID,
     'station_lid': LEGACY_STATION_ID,
-    'start_date': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_date': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
+    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
+    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
 }
 cparams = CampbellParam(**params)
 creadings = CampbellReadings(cparams)
