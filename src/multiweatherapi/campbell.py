@@ -96,7 +96,8 @@ class CampbellParam:
 
         print('UTC End date: {}'.format(self.end_datetime))
         self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_datetime) + " \\ "
-        # self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_datetime else None
+        # self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        # if self.end_datetime else None
         self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc) if self.end_datetime else None
         self.conversion_msg += 'Explicit UTC time end date after conversion: {}'.format(self.end_datetime) + " \\ "
         print('Explicit UTC time End date: {}'.format(self.end_datetime))
@@ -204,7 +205,8 @@ class CampbellReadings:
             self.response = json.load(open(param.json_file))
             self.__parse()
         elif param.station_lid and param.access_token:
-            self.__get(param.station_lid, param.start_datetime, param.end_datetime, param.measurements, param.access_token)
+            self.__get(param.station_lid, param.start_datetime, param.end_datetime, param.measurements,
+                       param.access_token)
         elif param.station_lid or param.access_token:
             raise Exception('"station_id" and "access_token" parameters must both be included.')
         else:
