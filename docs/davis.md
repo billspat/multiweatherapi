@@ -128,15 +128,15 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
 
 - Required Parameters
 
-| Name       | Contents                           | Type                |
-| ---------- | ---------------------------------- | ------------------- |
-| sn         | Station ID                         | str                 |
-| apikey     | Client-specific value              | str                 |
-| apisec     | Client-specific value              | str                 |
-| start_date | Start date and time (UTC expected) | datetime (optional) |
-| end_date   | End date and time (UTC expected)   | datetime (optional) |
+| Name           | Contents                           | Type                |
+| -------------- | ---------------------------------- | ------------------- |
+| sn             | Station ID                         | str                 |
+| apikey         | Client-specific value              | str                 |
+| apisec         | Client-specific value              | str                 |
+| start_datetime | Start date and time (UTC expected) | datetime (optional) |
+| end_datetime   | End date and time (UTC expected)   | datetime (optional) |
 
-> NOTE: For date/time range to correctly work, both parameters should be in UTC timezone
+> NOTE: For date and time range to correctly work, both `start_datetime` and `end_datetime` parameters should be in UTC time zone
 
 - 24hr+ Data Polling
 
@@ -158,8 +158,8 @@ params = {
     'sn': STATION_ID,
     'apikey': API_KEY,
     'apisec': API_SECURITY,
-    'start_date': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_date': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
+    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
+    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
 }
 dparams = DavisParam(**params)
 dreadings = DavisReadings(dparams)
