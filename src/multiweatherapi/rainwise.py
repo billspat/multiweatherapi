@@ -21,13 +21,13 @@ class RainwiseParam:
         Values xml or json; returns the data as JSON or XML
     interval: int, optional (default 1 min)
         Data aggregation interval, 1, 5, 10, 15, 30, 60 minute intervals
-    start_date_org : datetime
+    start_datetime_org : datetime
         Stores datetime object passed initially
-    start_date : datetime (UTC expected)
+    start_datetime : datetime (UTC expected)
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-    end_date_org : datetime
+    end_datetime_org : datetime
         Stores datetime object passed initially
-    end_date : datetime (UTC expected)
+    end_datetime : datetime (UTC expected)
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     tz : str
         Time zone information
@@ -39,17 +39,17 @@ class RainwiseParam:
         Python binding version
     """
     def __init__(self, username=None, sid=None, pid=None, mac=None, ret_form='json', interval=1,
-                 start_date=None, end_date=None, tz=None, json_file=None, binding_ver=None):
+                 start_datetime=None, end_datetime=None, tz=None, json_file=None, binding_ver=None):
         self.username = username
         self.sid = sid
         self.pid = pid
         self.mac = mac
         self.ret_form = ret_form
         self.interval = interval
-        self.start_date_org = start_date
-        self.start_date = start_date
-        self.end_date_org = end_date
-        self.end_date = end_date
+        self.start_datetime_org = start_datetime
+        self.start_datetime = start_datetime
+        self.end_datetime_org = end_datetime
+        self.end_datetime = end_datetime
         self.tz = tz
         self.conversion_msg = ''
 
@@ -61,16 +61,16 @@ class RainwiseParam:
 
     def __check_params(self):
         tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
-        if self.start_date and not isinstance(self.start_date, datetime):
-            raise Exception('start_date must be datetime.datetime instance')
-        if self.end_date and not isinstance(self.end_date, datetime):
-            raise Exception('end_date must be datetime.datetime instance')
-        if self.start_date and self.end_date and (self.start_date > self.end_date):
-            raise Exception('start_date must be earlier than end_date')
+        if self.start_datetime and not isinstance(self.start_datetime, datetime):
+            raise Exception('start_datetime must be datetime.datetime instance')
+        if self.end_datetime and not isinstance(self.end_datetime, datetime):
+            raise Exception('end_datetime must be datetime.datetime instance')
+        if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
+            raise Exception('start_datetime must be earlier than end_datetime')
         if self.tz and (self.tz not in tz_option):
             raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
-        if (self.start_date or self.end_date) and not self.tz:
-            raise Exception('if start_date or end_date is specified, tz must be specified')
+        if (self.start_datetime or self.end_datetime) and not self.tz:
+            raise Exception('if start_datetime or end_datetime is specified, tz must be specified')
         if self.username is None or self.mac is None or self.username != self.mac:
             raise Exception('username and mac parameters must be included and same value')
         if self.sid is None or self.pid is None or self.sid != self.pid:
@@ -87,30 +87,32 @@ class RainwiseParam:
             'CT': 'US/Central',
             'ET': 'US/Eastern'
         }
-        print('UTC Start date: {}, local time zone: {}'.format(self.start_date, self.tz))
+        print('UTC Start date: {}, local time zone: {}'.format(self.start_datetime, self.tz))
         self.conversion_msg += \
-            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_date, self.tz) + " \\ "
-        # self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) \
-        #     if self.start_date else None
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.start_date else None
-        print('Local time Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
+            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_datetime, self.tz) + " \\ "
+        # self.start_datetime = self.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None) \
+        #     if self.start_datetime else None
+        self.start_datetime = \
+            self.start_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.start_datetime else None
+        print('Local time Start date: {}'.format(self.start_datetime))
+        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_datetime) + " \\ "
 
-        print('UTC End date: {}, local time zone: {}'.format(self.end_date, self.tz))
+        print('UTC End date: {}, local time zone: {}'.format(self.end_datetime, self.tz))
         self.conversion_msg += \
-            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_date, self.tz) + " \\ "
-        # self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.end_date else None
-        print('Local time End date: {}'.format(self.end_date))
-        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
+            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_datetime, self.tz) + " \\ "
+        # self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        # if self.end_datetime else None
+        self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.end_datetime else None
+        print('Local time End date: {}'.format(self.end_datetime))
+        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_datetime) + " \\ "
 
     def __format_time(self):
         self.__utc_to_local()
-        self.start_date = self.start_date.strftime('%Y-%m-%d %H:%M:%S') if self.start_date \
+        self.start_datetime = self.start_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.start_datetime \
             else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        self.end_date = self.end_date.strftime('%Y-%m-%d %H:%M:%S') if self.end_date \
+        self.end_datetime = self.end_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.end_datetime \
             else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 
@@ -142,10 +144,10 @@ class RainwiseReadings:
             'mac': param.mac,
             'ret_form': param.ret_form,
             'interval': param.interval,
-            'start_date_org': param.start_date_org,
-            'start_date': param.start_date,
-            'end_date_org': param.end_date_org,
-            'end_date': param.end_date,
+            'start_datetime_org': param.start_datetime_org,
+            'start_datetime': param.start_datetime,
+            'end_datetime_org': param.end_datetime_org,
+            'end_datetime': param.end_datetime,
             'conversion_msg': param.conversion_msg,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
@@ -155,7 +157,7 @@ class RainwiseReadings:
             self.__parse()
         elif param.username and param.sid and param.pid and param.mac:
             self.__get(param.username, param.sid, param.pid, param.mac, param.ret_form, param.interval,
-                       param.start_date, param.end_date)
+                       param.start_datetime, param.end_datetime)
         elif param.username or param.sid or param.pid or param.mac:
             raise Exception('"username", "sid", "pid", "mac" parameters must be included.')
         else:
@@ -169,7 +171,7 @@ class RainwiseReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def __get(self, username, sid, pid, mac, ret_form, interval, start_date=None, end_date=None):
+    def __get(self, username, sid, pid, mac, ret_form, interval, start_datetime=None, end_datetime=None):
         """
         Gets a device readings using a GET request to the Rainwise API.
         Wraps build and parse functions.
@@ -187,17 +189,17 @@ class RainwiseReadings:
             Values xml or json; returns the data as JSON or XML
         interval: int, optional (default 1 min)
             Data aggregation interval, 1, 5, 10, 15, 30, 60 minute intervals
-        start_date : datetime
+        start_datetime : datetime
             Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-        end_date : datetime
+        end_datetime : datetime
             Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
         """
-        self.__build(username, sid, pid, mac, ret_form, interval, start_date, end_date)
+        self.__build(username, sid, pid, mac, ret_form, interval, start_datetime, end_datetime)
         self.__make_request()
         self.__parse()
         return self
 
-    def __build(self, username, sid, pid, mac, ret_form, interval, start_date=None, end_date=None):
+    def __build(self, username, sid, pid, mac, ret_form, interval, start_datetime=None, end_datetime=None):
         """
         Gets a device readings using a GET request to the Rainwise API.
         Parameters
@@ -214,9 +216,9 @@ class RainwiseReadings:
             Values xml or json; returns the data as JSON or XML
         interval: int, optional (default 1 min)
             Data aggregation interval, 1, 5, 10, 15, 30, 60 minute intervals
-        start_date : datetime
+        start_datetime : datetime
             Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-        end_date : datetime
+        end_datetime : datetime
             Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
         """
         self.request = Request('GET',
@@ -227,8 +229,8 @@ class RainwiseReadings:
                                        'mac': mac,
                                        'format': ret_form,
                                        'interval': interval,
-                                       'sdate': start_date,
-                                       'edate': end_date}).prepare()
+                                       'sdate': start_datetime,
+                                       'edate': end_datetime}).prepare()
 
         self.debug_info['http_method'] = self.request.method
         self.debug_info['url'] = self.request.url
