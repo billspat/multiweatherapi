@@ -49,15 +49,15 @@ To create, following request/call needs to be made:
 
 - Required Parameters
 
-| Name          | Contents                                                     | Type     |
-| ------------- | ------------------------------------------------------------ | -------- |
-| sn            | Logger serial number that data should be grabbed for         | str      |
-| client_id     | client-specific value provided by Onset                      | str      |
-| client_secret | client-specific value provided by Onset                      | str      |
-| ret_form      | The format data should be returned in. (Only JSON is supported) | str      |
-| user_id       | Numeric ID of the user account                               | str      |
-| start_date    | Start date and time (UTC time zone expected)                 | datetime |
-| end_date      | End date and time (UTC time zone expected)                   | datetime |
+| Name           | Contents                                                     | Type     |
+| -------------- | ------------------------------------------------------------ | -------- |
+| sn             | Logger serial number that data should be grabbed for         | str      |
+| client_id      | client-specific value provided by Onset                      | str      |
+| client_secret  | client-specific value provided by Onset                      | str      |
+| ret_form       | The format data should be returned in. (Only JSON is supported) | str      |
+| user_id        | Numeric ID of the user account                               | str      |
+| start_datetime | Start date and time (UTC time zone expected)                 | datetime |
+| end_datetime   | End date and time (UTC time zone expected)                   | datetime |
 
 > NOTE: start_date & end_date must be in UTC time zone for Python binding to correctly interpret date/time
 
@@ -70,8 +70,8 @@ params = {
     'client_secret': CLIENT_SECRET,
     'ret_form': 'JSON',
   	'user_id': USER_ID
-    'start_date': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_date': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
+    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
+    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
 }
 oparams = OnsetParam(**params)
 oreadings = OnsetReadings(oparams)
