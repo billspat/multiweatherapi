@@ -42,17 +42,17 @@ Zentra weather station API requires an ***API Key*** that is an user token each 
 
 - Required Parameters
 
-| Name       | Contents                                                     | Type     |
-| ---------- | ------------------------------------------------------------ | -------- |
-| sn         | Serial number of device (device_sn)                          | str      |
-| token      | API Key (Client-specific value)                              | str      |
-| start_date | Start date and time (UTC time zone expected)                 | datetime |
-| end_date   | End date and time (UTC time zone expected)                   | datetime |
-| tz         | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | str      |
-| start_mrid | Start mrid of mrid range                                     | int      |
-| end_mrid   | End mrid of mrid range                                       | int      |
+| Name           | Contents                                                     | Type     |
+| -------------- | ------------------------------------------------------------ | -------- |
+| sn             | Serial number of device (device_sn)                          | str      |
+| token          | API Key (Client-specific value)                              | str      |
+| start_datetime | Start date and time (UTC time zone expected)                 | datetime |
+| end_datetime   | End date and time (UTC time zone expected)                   | datetime |
+| tz             | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | str      |
+| start_mrid     | Start mrid of mrid range                                     | int      |
+| end_mrid       | End mrid of mrid range                                       | int      |
 
-> NOTE: start_date & end_date must be in UTC time zone for Python binding to correctly interpret date/time
+> NOTE: start_datetime & end_datetime must be in UTC time zone for Python binding to correctly interpret date and time
 
 > NOTE: HT: Hawaii Time / AT: Alaska Time / PT: Pacific Time / MT: Mountain Time / CT: Central Time / ET: Eastern Time
 
@@ -62,8 +62,8 @@ Zentra weather station API requires an ***API Key*** that is an user token each 
 params = {
     'sn': DEVICE_SN,
     'token': API_KEY,
-    'start_date': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_date': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M'),
+    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
+    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M'),
     'tz' : 'ET'
 }
 zparams = ZentraParam(**params)
