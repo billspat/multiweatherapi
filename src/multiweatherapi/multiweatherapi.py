@@ -28,8 +28,8 @@ class ApiWrapper:
         if self.vendor == 'zentra':
             zparam = ZentraParam(sn=self.params.get('sn', None),
                                  token=self.params.get('token', None),
-                                 start_date=self.params.get('start_date', None),
-                                 end_date=self.params.get('end_date', None),
+                                 start_datetime=self.params.get('start_date', None),
+                                 end_datetime=self.params.get('end_date', None),
                                  start_mrid=self.params.get('start_mrid', None),
                                  end_mrid=self.params.get('end_mrid', None),
                                  tz=self.params.get('tz', None),
@@ -43,8 +43,8 @@ class ApiWrapper:
             dparam = DavisParam(sn=self.params.get('sn', None),
                                 apikey=self.params.get('apikey', None),
                                 apisec=self.params.get('apisec', None),
-                                start_date=self.params.get('start_date', None),
-                                end_date=self.params.get('end_date', None),
+                                start_datetime=self.params.get('start_date', None),
+                                end_datetime=self.params.get('end_date', None),
                                 binding_ver=__version__)
             dreadings = DavisReadings(dparam)
             self.resp_raw = dreadings.response
@@ -54,8 +54,8 @@ class ApiWrapper:
         elif self.vendor == 'spectrum':
             sparam = SpectrumParam(sn=self.params.get('sn', None),
                                    apikey=self.params.get('apikey', None),
-                                   start_date=self.params.get('start_date', None),
-                                   end_date=self.params.get('end_date', None),
+                                   start_datetime=self.params.get('start_date', None),
+                                   end_datetime=self.params.get('end_date', None),
                                    date=self.params.get('date', None),
                                    tz=self.params.get('tz', None),
                                    count=self.params.get('count', None),
@@ -71,8 +71,8 @@ class ApiWrapper:
                                 client_secret=self.params.get('client_secret', None),
                                 ret_form=self.params.get('ret_form', None),
                                 user_id=self.params.get('user_id', None),
-                                start_date=self.params.get('start_date', None),
-                                end_date=self.params.get('end_date', None),
+                                start_datetime=self.params.get('start_date', None),
+                                end_datetime=self.params.get('end_date', None),
                                 binding_ver=__version__)
             oreadings = OnsetReadings(oparam)
             self.resp_raw = oreadings.response
@@ -86,8 +86,8 @@ class ApiWrapper:
                                    mac=self.params.get('mac', None),
                                    ret_form=self.params.get('ret_form', None),
                                    interval=self.params.get('interval', None),
-                                   start_date=self.params.get('start_date', None),
-                                   end_date=self.params.get('end_date', None),
+                                   start_datetime=self.params.get('start_date', None),
+                                   end_datetime=self.params.get('end_date', None),
                                    tz=self.params.get('tz', None),
                                    binding_ver=__version__)
             rreadings = RainwiseReadings(rparam)
@@ -100,8 +100,8 @@ class ApiWrapper:
                                    user_passwd=self.params.get('user_passwd', None),
                                    station_id=self.params.get('station_id', None),
                                    station_lid=self.params.get('station_lid', None),
-                                   start_date=self.params.get('start_date', None),
-                                   end_date=self.params.get('end_date', None),
+                                   start_datetime=self.params.get('start_date', None),
+                                   end_datetime=self.params.get('end_date', None),
                                    binding_ver=__version__)
             creadings = CampbellReadings(cparam)
             self.resp_raw = creadings.response
