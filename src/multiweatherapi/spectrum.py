@@ -13,14 +13,14 @@ class SpectrumParam:
         The serial number of the device
     apikey : str
         The customer's access key
-    start_date_org : datetime
+    start_datetime_org : datetime
         Stores datetime object passed initially
-    start_date : datetime
+    start_datetime : datetime
         Return readings for a specific customer device for a specific date-time range.
         (e.g., 2021-08-01 00:00)
-    end_date_org : datetime
+    end_datetime_org : datetime
         Stores datetime object passed initially
-    end_date : datetime
+    end_datetime : datetime
         Return readings for a specific customer device for a specific date-time range.
         (e.g., 2021-08-31 23:59)
     date_org : datetime
@@ -38,14 +38,14 @@ class SpectrumParam:
     binding_ver : str
         Python binding version
     """
-    def __init__(self, sn=None, apikey=None, start_date=None, end_date=None, date=None, tz=None, count=None,
+    def __init__(self, sn=None, apikey=None, start_datetime=None, end_datetime=None, date=None, tz=None, count=None,
                  json_file=None, binding_ver=None):
         self.sn = sn
         self.apikey = apikey
-        self.start_date_org = start_date
-        self.start_date = start_date
-        self.end_date_org = end_date
-        self.end_date = end_date
+        self.start_datetime_org = start_datetime
+        self.start_datetime = start_datetime
+        self.end_datetime_org = end_datetime
+        self.end_datetime = end_datetime
         self.date_org = date
         self.date = date
         self.tz = tz
@@ -59,18 +59,18 @@ class SpectrumParam:
 
     def __check_params(self):
         tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
-        if self.start_date and not isinstance(self.start_date, datetime):
-            raise Exception('start_date must be datetime.datetime instance')
-        if self.end_date and not isinstance(self.end_date, datetime):
-            raise Exception('end_date must be datetime.datetime instance')
-        if self.start_date and self.end_date and (self.start_date > self.end_date):
-            raise Exception('start_date must be earlier than end_date')
+        if self.start_datetime and not isinstance(self.start_datetime, datetime):
+            raise Exception('start_datetime must be datetime.datetime instance')
+        if self.end_datetime and not isinstance(self.end_datetime, datetime):
+            raise Exception('end_datetime must be datetime.datetime instance')
+        if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
+            raise Exception('start_datetime must be earlier than end_datetime')
         if self.date and not isinstance(self.date, datetime):
             raise Exception('date must be datetime.datetime instance')
         if self.tz and (self.tz not in tz_option):
             raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
-        if (self.start_date or self.end_date or self.date) and not self.tz:
-            raise Exception('if start_date or end_date is specified, tz must be specified')
+        if (self.start_datetime or self.end_datetime or self.date) and not self.tz:
+            raise Exception('if start_datetime or end_datetime is specified, tz must be specified')
 
     def __utc_to_local(self):
         tzlist = {
@@ -81,22 +81,24 @@ class SpectrumParam:
             'CT': 'US/Central',
             'ET': 'US/Eastern'
         }
-        print('UTC Start date: {}, local time zone: {}'.format(self.start_date, self.tz))
+        print('UTC Start date: {}, local time zone: {}'.format(self.start_datetime, self.tz))
         self.conversion_msg += \
-            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_date, self.tz) + " \\ "
-        # self.start_date=self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.start_date else None
-        print('Local time Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
+            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_datetime, self.tz) + " \\ "
+        # self.start_datetime=self.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        # if self.start_datetime else None
+        self.start_datetime = \
+            self.start_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.start_datetime else None
+        print('Local time Start date: {}'.format(self.start_datetime))
+        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_datetime) + " \\ "
 
-        print('UTC End date: {}, local time zone: {}'.format(self.end_date, self.tz))
+        print('UTC End date: {}, local time zone: {}'.format(self.end_datetime, self.tz))
         self.conversion_msg += \
-            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_date, self.tz) + " \\ "
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.end_date else None
-        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
-        print('Local time End date: {}'.format(self.end_date))
+            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_datetime, self.tz) + " \\ "
+        self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.end_datetime else None
+        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_datetime) + " \\ "
+        print('Local time End date: {}'.format(self.end_datetime))
 
         print('UTC date: {}, local time zone: {}'.format(self.date, self.tz))
         self.conversion_msg += \
@@ -133,10 +135,10 @@ class SpectrumReadings:
         self.debug_info = {
             'sn': param.sn,
             'apikey': param.apikey,
-            'start_date_org': param.start_date_org,
-            'start_date': param.start_date,
-            'end_date_org': param.end_date_org,
-            'end_date': param.end_date,
+            'start_datetime_org': param.start_datetime_org,
+            'start_datetime': param.start_datetime,
+            'end_datetime_org': param.end_datetime_org,
+            'end_datetime': param.end_datetime,
             'date_org': param.date_org,
             'date': param.date,
             'conversion_msg': param.conversion_msg,
@@ -148,7 +150,7 @@ class SpectrumReadings:
             self.response = json.load(open(param.json_file))
             self.__parse()
         elif param.sn and param.apikey:
-            self.__get(param.sn, param.apikey, param.start_date, param.end_date, param.date, param.count)
+            self.__get(param.sn, param.apikey, param.start_datetime, param.end_datetime, param.date, param.count)
         elif param.sn or param.apikey:
             raise Exception('"sn" and "apikey" parameters must both be included.')
         else:
@@ -162,7 +164,7 @@ class SpectrumReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def __get(self, sn, apikey, start_date=None, end_date=None, date=None, count=None):
+    def __get(self, sn, apikey, start_datetime=None, end_datetime=None, date=None, count=None):
         """
         Gets a device readings using a GET request to the Spectrum API.
         Wraps build and parse functions.
@@ -172,10 +174,10 @@ class SpectrumReadings:
             The serial number of the device
         apikey : Spectrum apikey
             The user's access apikey
-        start_date : datetime
+        start_datetime : datetime
             Return readings for a specific customer device for a specific date/time range.
             (e.g., 2021-08-01, 2021-08-01 00:00)
-        end_date : datetime
+        end_datetime : datetime
             Return readings for a specific customer device for a specific date/time range.
             (e.g., 2021-08-31, 2021-08-31 23:59)
         date : datetime
@@ -183,12 +185,12 @@ class SpectrumReadings:
         count : int
             Get a specific number of recent sensor data records for a specific customer device
         """
-        self.__build(sn, apikey, start_date, end_date, date, count)
+        self.__build(sn, apikey, start_datetime, end_datetime, date, count)
         self.__make_request()
         self.__parse()
         return self
 
-    def __build(self, sn, apikey, start_date=None, end_date=None, date=None, count=None):
+    def __build(self, sn, apikey, start_datetime=None, end_datetime=None, date=None, count=None):
         """
         Gets a device readings using a GET request to the Spectrum API.
         Parameters
@@ -197,10 +199,10 @@ class SpectrumReadings:
             The serial number of the device
         apikey : Spectrum apikey
             The user's access apikey
-        start_date : datetime
+        start_datetime : datetime
             Return readings for a specific customer device for a specific date/time range.
             (e.g., 2021-08-01, 2021-08-01 00:00)
-        end_date : datetime
+        end_datetime : datetime
             Return readings for a specific customer device for a specific date/time range.
             (e.g., 2021-08-31, 2021-08-31 23:59)
         date : datetime
@@ -216,11 +218,11 @@ class SpectrumReadings:
             self.request = Request('GET',
                                    url='https://api.specconnect.net:6703/api/Customer/GetDataByDate',
                                    params={'customerApiKey': apikey, 'serialNumber': sn, 'date': date}).prepare()
-        elif start_date and end_date:
+        elif start_datetime and end_datetime:
             self.request = Request('GET',
                                    url='https://api.specconnect.net:6703/api/Customer/GetDataInDateTimeRange',
                                    params={'customerApiKey': apikey, 'serialNumber': sn,
-                                           'startDate': start_date, 'endDate': end_date}).prepare()
+                                           'startDate': start_datetime, 'endDate': end_datetime}).prepare()
         else:
             self.request = Request('GET',
                                    url='https://api.specconnect.net:6703/api/Customer/GetData',
