@@ -13,13 +13,13 @@ class ZentraParam:
         The serial number of the device
     token : str
         The user's access token
-    start_date_org : datetime
+    start_datetime_org : datetime
         Stores datetime object passed initially
-    start_date : datetime
+    start_datetime : datetime
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-    end_date_org : datetime
+    end_datetime_org : datetime
         Stores datetime object passed initially
-    end_date : datetime
+    end_datetime : datetime
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     conversion_msg : str
         Stores time conversion message
@@ -34,14 +34,14 @@ class ZentraParam:
     binding_ver : str
         Python binding version
     """
-    def __init__(self, sn=None, token=None, start_date=None, end_date=None, tz=None, start_mrid=None, end_mrid=None,
-                 json_file=None, binding_ver=None):
+    def __init__(self, sn=None, token=None, start_datetime=None, end_datetime=None, tz=None, start_mrid=None,
+                 end_mrid=None, json_file=None, binding_ver=None):
         self.sn = sn
         self.token = token
-        self.start_date_org = start_date
-        self.start_date = start_date
-        self.end_date_org = end_date
-        self.end_date = end_date
+        self.start_datetime_org = start_datetime
+        self.start_datetime = start_datetime
+        self.end_datetime_org = end_datetime
+        self.end_datetime = end_datetime
         self.tz = tz
         self.conversion_msg = ''
         self.start_mrid = start_mrid
@@ -54,16 +54,16 @@ class ZentraParam:
 
     def __check_params(self):
         tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
-        if self.start_date and not isinstance(self.start_date, datetime):
-            raise Exception('start_date must be datetime.datetime instance')
-        if self.end_date and not isinstance(self.end_date, datetime):
-            raise Exception('end_date must be datetime.datetime instance')
-        if self.start_date and self.end_date and (self.start_date > self.end_date):
-            raise Exception('start_date must be earlier than end_date')
+        if self.start_datetime and not isinstance(self.start_datetime, datetime):
+            raise Exception('start_datetime must be datetime.datetime instance')
+        if self.end_datetime and not isinstance(self.end_datetime, datetime):
+            raise Exception('end_datetime must be datetime.datetime instance')
+        if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
+            raise Exception('start_datetime must be earlier than end_datetime')
         if self.tz and (self.tz not in tz_option):
             raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
-        if (self.start_date or self.end_date) and not self.tz:
-            raise Exception('if start_date or end_date is specified, tz must be specified')
+        if (self.start_datetime or self.end_datetime) and not self.tz:
+            raise Exception('if start_datetime or end_datetime is specified, tz must be specified')
 
     def __utc_to_local(self):
         tzlist = {
@@ -74,29 +74,30 @@ class ZentraParam:
             'CT': 'US/Central',
             'ET': 'US/Eastern'
         }
-        print('UTC Start date: {}, local time zone: {}'.format(self.start_date, self.tz))
+        print('UTC Start date: {}, local time zone: {}'.format(self.start_datetime, self.tz))
         self.conversion_msg += \
-            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_date, self.tz) + " \\ "
-        # self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) \
-        #     if self.start_date else None
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.start_date else None
-        print('Local time Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
+            'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_datetime, self.tz) + " \\ "
+        # self.start_datetime = self.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None) \
+        #     if self.start_datetime else None
+        self.start_datetime = \
+            self.start_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.start_datetime else None
+        print('Local time Start date: {}'.format(self.start_datetime))
+        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_datetime) + " \\ "
 
-        print('UTC End date: {}, local time zone: {}'.format(self.end_date, self.tz))
+        print('UTC End date: {}, local time zone: {}'.format(self.end_datetime, self.tz))
         self.conversion_msg += \
-            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_date, self.tz) + " \\ "
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.end_date else None
-        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
-        print('Local time End date: {}'.format(self.end_date))
+            'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_datetime, self.tz) + " \\ "
+        self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
+            if self.end_datetime else None
+        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_datetime) + " \\ "
+        print('Local time End date: {}'.format(self.end_datetime))
 
     def __format_time(self):
         self.__utc_to_local()
-        self.start_date = self.start_date.strftime('%m-%d-%Y %H:%M') if self.start_date \
+        self.start_datetime = self.start_datetime.strftime('%m-%d-%Y %H:%M') if self.start_datetime \
             else datetime.now().strftime('%m-%d-%Y %H:%M')
-        self.end_date = self.end_date.strftime('%m-%d-%Y %H:%M') if self.end_date \
+        self.end_datetime = self.end_datetime.strftime('%m-%d-%Y %H:%M') if self.end_datetime \
             else datetime.now().strftime('%m-%d-%Y %H:%M')
 
 
@@ -126,10 +127,10 @@ class ZentraReadings:
         self.debug_info = {
             'sn': param.sn,
             'token': param.token,
-            'start_date_org': param.start_date_org,
-            'start_date': param.start_date,
-            'end_date_org': param.end_date_org,
-            'end_date': param.end_date,
+            'start_datetime_org': param.start_datetime_org,
+            'start_datetime': param.start_datetime,
+            'end_datetime_org': param.end_datetime_org,
+            'end_datetime': param.end_datetime,
             'conversion_msg': param.conversion_msg,
             'start_mrid': param.start_mrid,
             'end_mrid': param.end_mrid,
@@ -140,7 +141,8 @@ class ZentraReadings:
             self.response = json.load(open(param.json_file))
             self.__parse()
         elif param.sn and param.token:
-            self.__get(param.sn, param.token, param.start_date, param.end_date, param.start_mrid, param.end_mrid)
+            self.__get(param.sn, param.token, param.start_datetime, param.end_datetime, param.start_mrid,
+                       param.end_mrid)
         elif param.sn or param.token:
             raise Exception('"sn" and "token" parameters must both be included.')
         else:
@@ -154,7 +156,7 @@ class ZentraReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def __get(self, sn, token, start_date=None, end_date=None, start_mrid=None, end_mrid=None):
+    def __get(self, sn, token, start_datetime=None, end_datetime=None, start_mrid=None, end_mrid=None):
         """
         Gets a device readings using a GET request to the Zentra API.
         Wraps build and parse functions.
@@ -164,21 +166,21 @@ class ZentraReadings:
             The serial number of the device
         token : str
             The user's access token
-        start_date : int, optional
-            Return readings with timestamps ≥ start_date.
-        end_date : int, optional
-            Return readings with timestamps ≤ end_date.
+        start_datetime : int, optional
+            Return readings with timestamps ≥ start_datetime.
+        end_datetime : int, optional
+            Return readings with timestamps ≤ end_datetime.
         start_mrid : int, optional
             Return readings with mrid ≥ start_mrid.
         end_mrid : int, optional
             Return readings with mrid ≤ start_mrid.
         """
-        self.__build(sn, token, start_date, end_date, start_mrid, end_mrid)
+        self.__build(sn, token, start_datetime, end_datetime, start_mrid, end_mrid)
         self.__make_request()
         self.__parse()
         return self
 
-    def __build(self, sn, token, start_date=None, end_date=None, start_mrid=None, end_mrid=None):
+    def __build(self, sn, token, start_datetime=None, end_datetime=None, start_mrid=None, end_mrid=None):
         """
         Gets a device readings using a GET request to the Zentra API.
         Parameters
@@ -187,10 +189,10 @@ class ZentraReadings:
             The serial number of the device
         token : str
             The user's access token
-        start_date : int, optional
-            Return readings with timestamps ≥ start_date.
-        end_date : int, optional
-            Return readings with timestamps ≤ end_date.
+        start_datetime : int, optional
+            Return readings with timestamps ≥ start_datetime.
+        end_datetime : int, optional
+            Return readings with timestamps ≤ end_datetime.
         start_mrid : int, optional
             Return readings with mrid ≥ start_mrid.
         end_mrid : int, optional
@@ -201,8 +203,8 @@ class ZentraReadings:
                                headers={
                                    'Authorization': "Token " + token},
                                params={'sn': sn,
-                                       'start_date': start_date,
-                                       'end_date': end_date,
+                                       'start_datetime': start_datetime,
+                                       'end_datetime': end_datetime,
                                        'start_mrid': start_mrid,
                                        'end_mrid': end_mrid}).prepare()
         self.debug_info['http_method'] = self.request.method
