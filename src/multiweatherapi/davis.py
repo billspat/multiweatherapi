@@ -17,9 +17,9 @@ class DavisParam:
         The customer's access key (v2)
     apisec : str
         API security that is used to compute the hash
-    start_date : datetime (UTC expected)
+    start_datetime : datetime (UTC expected)
         Return readings with timestamps ≥ start_time. Specify start_time in str. (2021-08-01, 2021-08-01)
-    end_date : datetime (UTC expected)
+    end_datetime : datetime (UTC expected)
         Return readings with timestamps ≤ end_time. Specify end_time in str. (2021-08-31, 2021-08-31)
     date_tuple_list : list
         A list of date/time tuples with API signatures
@@ -30,17 +30,18 @@ class DavisParam:
     binding_ver : str
         Python binding version
     """
-    def __init__(self, sn=None, apikey=None, apisec=None, start_date=None, end_date=None, json_file=None,
+    def __init__(self, sn=None, apikey=None, apisec=None, start_datetime=None, end_datetime=None, json_file=None,
                  binding_ver=None):
         self.sn = sn
         self.apikey = apikey
         self.apisec = apisec
-        self.apisig = None  # used when start_date & end_date is passed
+        self.apisig = None  # used when start_datetime & end_datetime is passed
         self.t = int(datetime.now().timestamp())
-        # self.start_date = int(time.mktime(time.strptime(start_date, "%m/%d/%Y %H:%M"))) if start_date else None
-        # self.end_date = int(time.mktime(time.strptime(end_date, "%m/%d/%Y %H:%M"))) if end_date else None
-        self.start_date = start_date
-        self.end_date = end_date
+        # self.start_datetime = int(time.mktime(time.strptime(start_datetime, "%m/%d/%Y %H:%M")))
+        # if start_datetime else None
+        # self.end_datetime = int(time.mktime(time.strptime(end_datetime, "%m/%d/%Y %H:%M"))) if end_datetime else None
+        self.start_datetime = start_datetime
+        self.end_datetime = end_datetime
         self.date_tuple_list = list()
         self.conversion_msg = ''
         self.json_file = json_file
@@ -53,52 +54,53 @@ class DavisParam:
             self.__compute_signature()
 
     def __check_params(self):
-        if self.start_date and not isinstance(self.start_date, datetime):
-            raise Exception('start_date must be datetime.datetime instance')
-        if self.end_date and not isinstance(self.end_date, datetime):
-            raise Exception('end_date must be datetime.datetime instance')
-        if self.start_date and self.end_date and (self.start_date > self.end_date):
-            raise Exception('start_date must be earlier than end_date')
+        if self.start_datetime and not isinstance(self.start_datetime, datetime):
+            raise Exception('start_datetime must be datetime.datetime instance')
+        if self.end_datetime and not isinstance(self.end_datetime, datetime):
+            raise Exception('end_datetime must be datetime.datetime instance')
+        if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
+            raise Exception('start_datetime must be earlier than end_datetime')
         if self.apikey is None or self.apisec is None:
             raise Exception('"apikey" and "apisec" parameters must both be included.')
         if self.sn is None:
             raise Exception('"sn" parameter must be included.')
 
-        if self.start_date and self.end_date:
-            if self.end_date - timedelta(hours=24) < self.start_date:
-                self.date_tuple_list.append((self.start_date, self.end_date))
+        if self.start_datetime and self.end_datetime:
+            if self.end_datetime - timedelta(hours=24) < self.start_datetime:
+                self.date_tuple_list.append((self.start_datetime, self.end_datetime))
             else:
-                while self.end_date - timedelta(hours=24) >= self.start_date:
+                while self.end_datetime - timedelta(hours=24) >= self.start_datetime:
                     self.date_tuple_list.append(
-                        (self.start_date, self.start_date + timedelta(hours=23, minutes=59, seconds=59)))
-                    self.start_date += timedelta(hours=24)
-                self.date_tuple_list.append((self.start_date, self.end_date))
+                        (self.start_datetime, self.start_datetime + timedelta(hours=23, minutes=59, seconds=59)))
+                    self.start_datetime += timedelta(hours=24)
+                self.date_tuple_list.append((self.start_datetime, self.end_datetime))
             for elem in self.date_tuple_list:
                 print(elem)
 
     def __utc_to_local(self):
         # this method does not affect the API outcome at all may be removed without any issue
-        print('UTC Start date: {}'.format(self.start_date))
-        # self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
+        print('UTC Start date: {}'.format(self.start_datetime))
+        # self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_datetime) + " \\ "
         self.conversion_msg += 'Davis utilizes Unix Epoch, just added explicit UTC timezone' + " \\ "
-        # self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None)
-        # if self.start_date else None
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc) if self.start_date else None
-        print('Explicit UTC time Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'Explicit UTC time start date after conversion: {}'.format(self.start_date) + " \\ "
+        # self.start_datetime = self.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        # if self.start_datetime else None
+        self.start_datetime = self.start_datetime.replace(tzinfo=timezone.utc) if self.start_datetime else None
+        print('Explicit UTC time Start date: {}'.format(self.start_datetime))
+        self.conversion_msg += 'Explicit UTC time start date after conversion: {}'.format(self.start_datetime) + " \\ "
         #
-        print('UTC End date: {}'.format(self.end_date))
-        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
-        # # self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc) if self.end_date else None
-        self.conversion_msg += 'Explicit UTC time end date after conversion: {}'.format(self.end_date) + " \\ "
-        print('Explicit UTC time End date: {}'.format(self.end_date))
+        print('UTC End date: {}'.format(self.end_datetime))
+        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_datetime) + " \\ "
+        # # self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        # if self.end_datetime else None
+        self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc) if self.end_datetime else None
+        self.conversion_msg += 'Explicit UTC time end date after conversion: {}'.format(self.end_datetime) + " \\ "
+        print('Explicit UTC time End date: {}'.format(self.end_datetime))
 
     def __format_time(self):
         self.__utc_to_local()
-        # self.start_date = int(self.start_date.timestamp()) if self.start_date else None
-        # self.end_date = int(self.end_date.timestamp()) if self.end_date else None
-        if self.start_date and self.end_date:
+        # self.start_datetime = int(self.start_datetime.timestamp()) if self.start_datetime else None
+        # self.end_datetime = int(self.end_datetime.timestamp()) if self.end_datetime else None
+        if self.start_datetime and self.end_datetime:
             temp_list = list()
             for st, ed in self.date_tuple_list:
                 st = int(st.replace(tzinfo=timezone.utc).timestamp())
@@ -124,7 +126,7 @@ class DavisParam:
             print("API Signature is: \"{}\"".format(sig))
             return sig
 
-        if self.start_date and self.end_date:
+        if self.start_datetime and self.end_datetime:
             temp_list = list()
             for st, ed in self.date_tuple_list:
                 params = {'api-key': self.apikey,
