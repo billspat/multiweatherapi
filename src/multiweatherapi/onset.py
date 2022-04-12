@@ -61,6 +61,8 @@ class OnsetParam:
             raise Exception('end_datetime must be datetime.datetime instance')
         if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
             raise Exception('start_datetime must be earlier than end_datetime')
+        if not self.json_file and not (self.start_datetime and self.end_datetime):
+            raise Exception('state_datetime and end_datetime must be specified')
         if self.client_id is None or self.client_secret is None:
             raise Exception('client_id and client_secret parameters must be included')
         if self.ret_form is None or self.ret_form != 'JSON':
