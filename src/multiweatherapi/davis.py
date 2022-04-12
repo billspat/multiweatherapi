@@ -60,6 +60,8 @@ class DavisParam:
             raise Exception('end_datetime must be datetime.datetime instance')
         if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
             raise Exception('start_datetime must be earlier than end_datetime')
+        if not self.json_file and not (self.start_datetime and self.end_datetime):
+            raise Exception('state_datetime and end_datetime must be specified')
         if self.apikey is None or self.apisec is None:
             raise Exception('"apikey" and "apisec" parameters must both be included.')
         if self.sn is None:
