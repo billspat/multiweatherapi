@@ -69,6 +69,8 @@ class RainwiseParam:
             raise Exception('start_datetime must be earlier than end_datetime')
         if self.tz and (self.tz not in tz_option):
             raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
+        if not self.json_file and not (self.start_datetime and self.end_datetime):
+            raise Exception('state_datetime and end_datetime must be specified')
         if (self.start_datetime or self.end_datetime) and not self.tz:
             raise Exception('if start_datetime or end_datetime is specified, tz must be specified')
         if self.username is None or self.mac is None or self.username != self.mac:
