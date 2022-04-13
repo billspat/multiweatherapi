@@ -1,4 +1,9 @@
 import json
+from os import getenv
+from dotenv import load_dotenv
+from os.path import isfile, isdir, join
+from datetime import datetime, timezone, timedelta
+
 from .davis import DavisParam, DavisReadings
 from .spectrum import SpectrumParam, SpectrumReadings
 from .zentra import ZentraParam, ZentraReadings
@@ -28,8 +33,8 @@ class ApiWrapper:
         if self.vendor == 'zentra':
             zparam = ZentraParam(sn=self.params.get('sn', None),
                                  token=self.params.get('token', None),
-                                 start_datetime=self.params.get('start_date', None),
-                                 end_datetime=self.params.get('end_date', None),
+                                 start_datetime=self.params.get('start_datetime', None),
+                                 end_datetime=self.params.get('end_datetime', None),
                                  start_mrid=self.params.get('start_mrid', None),
                                  end_mrid=self.params.get('end_mrid', None),
                                  tz=self.params.get('tz', None),
@@ -43,19 +48,19 @@ class ApiWrapper:
             dparam = DavisParam(sn=self.params.get('sn', None),
                                 apikey=self.params.get('apikey', None),
                                 apisec=self.params.get('apisec', None),
-                                start_datetime=self.params.get('start_date', None),
-                                end_datetime=self.params.get('end_date', None),
+                                start_datetime=self.params.get('start_datetime', None),
+                                end_datetime=self.params.get('end_datetime', None),
                                 binding_ver=__version__)
             dreadings = DavisReadings(dparam)
-            self.resp_raw = dreadings.response
+            self.resp_raw = dreadings.responses
             self.resp_parsed = dreadings.parsed_resp
             self.resp_debug = dreadings.debug_info
             return self
         elif self.vendor == 'spectrum':
             sparam = SpectrumParam(sn=self.params.get('sn', None),
                                    apikey=self.params.get('apikey', None),
-                                   start_datetime=self.params.get('start_date', None),
-                                   end_datetime=self.params.get('end_date', None),
+                                   start_datetime=self.params.get('start_datetime', None),
+                                   end_datetime=self.params.get('end_datetime', None),
                                    date=self.params.get('date', None),
                                    tz=self.params.get('tz', None),
                                    count=self.params.get('count', None),
@@ -71,8 +76,8 @@ class ApiWrapper:
                                 client_secret=self.params.get('client_secret', None),
                                 ret_form=self.params.get('ret_form', None),
                                 user_id=self.params.get('user_id', None),
-                                start_datetime=self.params.get('start_date', None),
-                                end_datetime=self.params.get('end_date', None),
+                                start_datetime=self.params.get('start_datetime', None),
+                                end_datetime=self.params.get('end_datetime', None),
                                 binding_ver=__version__)
             oreadings = OnsetReadings(oparam)
             self.resp_raw = oreadings.response
@@ -86,8 +91,8 @@ class ApiWrapper:
                                    mac=self.params.get('mac', None),
                                    ret_form=self.params.get('ret_form', None),
                                    interval=self.params.get('interval', None),
-                                   start_datetime=self.params.get('start_date', None),
-                                   end_datetime=self.params.get('end_date', None),
+                                   start_datetime=self.params.get('start_datetime', None),
+                                   end_datetime=self.params.get('end_datetime', None),
                                    tz=self.params.get('tz', None),
                                    binding_ver=__version__)
             rreadings = RainwiseReadings(rparam)
@@ -100,8 +105,8 @@ class ApiWrapper:
                                    user_passwd=self.params.get('user_passwd', None),
                                    station_id=self.params.get('station_id', None),
                                    station_lid=self.params.get('station_lid', None),
-                                   start_datetime=self.params.get('start_date', None),
-                                   end_datetime=self.params.get('end_date', None),
+                                   start_datetime=self.params.get('start_datetime', None),
+                                   end_datetime=self.params.get('end_datetime', None),
                                    binding_ver=__version__)
             creadings = CampbellReadings(cparam)
             self.resp_raw = creadings.response
@@ -117,3 +122,47 @@ def get_reading(vendor: str, **params) -> json:
 
 def get_version() -> str:
     return __version__
+
+
+def get_sample_reports(out_dir, start_datetime=None, end_datetime=None):
+    # if not env_file or not isfile(env_file):
+    #     raise Exception("key file must be specified and/or key file does not exist")
+    load_dotenv()
+    if not out_dir or not isdir(out_dir):
+        raise Exception("out_dir must be specified and/or out_dir folder does not exist")
+    if start_datetime and not isinstance(start_datetime, datetime):
+        raise Exception('start_datetime must be datetime.datetime instance')
+    if end_datetime and not isinstance(end_datetime, datetime):
+        raise Exception('end_datetime must be datetime.datetime instance')
+    if start_datetime and end_datetime and (start_datetime > end_datetime):
+        raise Exception('start_datetime must be earlier than end_datetime')
+    if not start_datetime or not end_datetime:
+        start_datetime = datetime.now() - timedelta(hours=24)
+        end_datetime = start_datetime + timedelta(hours=2)
+
+    def gen_report(vendor):
+        params = json.loads(getenv(vendor.upper()))
+        params['start_datetime'] = start_datetime
+        params['end_datetime'] = end_datetime
+        resp = get_reading(vendor, **params)
+        with open(join(out_dir, vendor+'.json'), 'w') as wf:
+            json.dump(resp.resp_raw, wf, indent=2)
+        print(resp.resp_raw)
+
+    # Campbell - Good
+    gen_report('campbell')
+
+    # Davis - Good
+    gen_report('davis')
+
+    # Onset - Good
+    gen_report('onset')
+
+    # Rainwise - Warning
+    gen_report('rainwise')
+
+    # Spectrum - Good
+    gen_report('spectrum')
+
+    # Zentra - Good
+    gen_report('zentra')
