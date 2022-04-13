@@ -1,4 +1,3 @@
 requests
 pytz
 pytest
-python-dotenv
