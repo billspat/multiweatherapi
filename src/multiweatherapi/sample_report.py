@@ -9,7 +9,7 @@ from datetime import datetime, timezone, timedelta
 from src.multiweatherapi import multiweatherapi
 
 
-def gen_sample_report(vendor: str, out_dir: str, start_datetime=None, end_datetime=None):
+def gen_sample_report(vendor: str, out_dir: str, start_datetime=None, end_datetime=None, tz=None):
     load_dotenv()
     vendor_list = ['zentra', 'spectrum', 'davis', 'onset', 'rainwise', 'campbell']
     if not vendor or vendor == '' or vendor.lower() not in vendor_list:
@@ -23,12 +23,13 @@ def gen_sample_report(vendor: str, out_dir: str, start_datetime=None, end_dateti
     if start_datetime and end_datetime and (start_datetime > end_datetime):
         raise Exception('start_datetime must be earlier than end_datetime')
     if not start_datetime or not end_datetime:
-        start_datetime = datetime.now() - timedelta(hours=24)
+        start_datetime = datetime.now(timezone.utc) - timedelta(hours=24)
         end_datetime = start_datetime + timedelta(hours=2)
 
     params = json.loads(getenv(vendor.upper()))
     params['start_datetime'] = start_datetime
     params['end_datetime'] = end_datetime
+    params['tz'] = tz if tz else 'ET'
     resp = multiweatherapi.get_reading(vendor, **params)
     with open(join(out_dir, vendor + '.json'), 'w') as wf:
         json.dump(resp.resp_raw, wf, indent=2)
@@ -72,6 +73,6 @@ if __name__ == '__main__':
     if start_datetime and end_datetime and timezone:
         start_datetime = format_datetime(start_datetime, timezone)
         end_datetime = format_datetime(end_datetime, timezone)
-        gen_sample_report(vendor, out_dir, start_datetime, end_datetime)
+        gen_sample_report(vendor, out_dir, start_datetime, end_datetime, timezone)
     else:
         gen_sample_report(vendor, out_dir)
