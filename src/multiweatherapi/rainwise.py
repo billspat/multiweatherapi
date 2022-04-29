@@ -50,6 +50,7 @@ class RainwiseParam:
         self.start_datetime = start_datetime
         self.end_datetime_org = end_datetime
         self.end_datetime = end_datetime
+        self.cur_datetime = datetime.now(timezone.utc)
         self.tz = tz
         self.conversion_msg = ''
 
@@ -109,6 +110,7 @@ class RainwiseParam:
             if self.end_datetime else None
         print('Local time End date: {}'.format(self.end_datetime))
         self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_datetime) + " \\ "
+        self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
     def __format_time(self):
         self.__utc_to_local()
@@ -116,6 +118,7 @@ class RainwiseParam:
             else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         self.end_datetime = self.end_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.end_datetime \
             else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        self.cur_datetime = self.cur_datetime.strftime('%Y-%m-%d %H:%M:%S')
 
 
 class RainwiseReadings:
@@ -125,8 +128,8 @@ class RainwiseReadings:
     ----------
     request : Request
         a Request object defining the request made to the Rainwise server
-    response : Response
-        a json response from the Rainwise server
+    response : list
+        a raw json response from the Rainwise server combined with meta data
     parsed_resp : list of dict
         a parsed response from
     """
@@ -150,6 +153,8 @@ class RainwiseReadings:
             'start_datetime': param.start_datetime,
             'end_datetime_org': param.end_datetime_org,
             'end_datetime': param.end_datetime,
+            'cur_datetime': param.cur_datetime,
+            'tz': param.tz,
             'conversion_msg': param.conversion_msg,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
@@ -243,6 +248,17 @@ class RainwiseReadings:
         """
         Sends a token request to the Rainwise API and stores the response.
         """
+        # prep response list
+        self.response = list()
+        metadata = {
+            "vendor": "rainwise",
+            "station_id": self.debug_info['mac'],
+            "timezone": self.debug_info['tz'],
+            "start_datetime": self.debug_info['start_datetime'],
+            "end_datetime": self.debug_info['end_datetime'],
+            "request_time": self.debug_info['cur_datetime'],
+            "python_binding_version": self.debug_info['binding_ver']}
+        self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
         if resp.status_code != 200:
@@ -251,9 +267,8 @@ class RainwiseReadings:
         elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
             raise Exception(
                 'Error: Device serial number entered does not exist')
-        self.response = resp.json()
+        self.response.append(resp.json())
         self.debug_info['response'] = self.response
-        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
     def __parse(self):
