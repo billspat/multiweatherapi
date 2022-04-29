@@ -34,7 +34,7 @@ class RainwiseParam:
     conversion_msg : str
         Stores time conversion message
     json_file : str, optional
-        The path to a local json file to parse
+        The path to a local json file to transform
     binding_ver : str
         Python binding version
     """
@@ -130,8 +130,8 @@ class RainwiseReadings:
         a Request object defining the request made to the Rainwise server
     response : list
         a raw json response from the Rainwise server combined with meta data
-    parsed_resp : list of dict
-        a parsed response from
+    transformed_resp : list of dict
+        a transformed response from raw JSON file or raw JSON response
     """
 
     def __init__(self, param: RainwiseParam):
@@ -161,7 +161,7 @@ class RainwiseReadings:
         }
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.__parse()
+            self.__transform()
         elif param.username and param.sid and param.pid and param.mac:
             self.__get(param.username, param.sid, param.pid, param.mac, param.ret_form, param.interval,
                        param.start_datetime, param.end_datetime)
@@ -171,7 +171,7 @@ class RainwiseReadings:
             # build an empty RainwiseToken
             self.request = None
             self.response = None
-            self.parsed_resp = None
+            self.transformed_resp = None
             # self.device_info = None
             # self.measurement_settings = None
             # self.time_settings = None
@@ -181,7 +181,7 @@ class RainwiseReadings:
     def __get(self, username, sid, pid, mac, ret_form, interval, start_datetime=None, end_datetime=None):
         """
         Gets a device readings using a GET request to the Rainwise API.
-        Wraps build and parse functions.
+        Wraps build and transform functions.
         Parameters
         ----------
         username : str
@@ -203,7 +203,7 @@ class RainwiseReadings:
         """
         self.__build(username, sid, pid, mac, ret_form, interval, start_datetime, end_datetime)
         self.__make_request()
-        self.__parse()
+        self.__transform()
         return self
 
     def __build(self, username, sid, pid, mac, ret_form, interval, start_datetime=None, end_datetime=None):
@@ -271,15 +271,21 @@ class RainwiseReadings:
         self.debug_info['response'] = self.response
         return self
 
-    def __parse(self):
+    def __transform(self):
         """
-        Parses the response.
+        Transform the response.
         """
-        self.parsed_resp = []
-        # try:
-        #     self.device_info = self.response['device']['device_info']
-        # except KeyError:
-        #     self.device_info = 'N/A'
-        # self.timeseries = list(
-        #     map(lambda x: RainwiseTimeseriesRecord(x), self.response['device']['timeseries']))
+        self.transformed_resp = list()
+        station_id = self.response[0]['station_id']
+        request_datetime = self.response[0]['request_time']
+        for idx in range(1, len(self.response)):
+            for k, v in self.response[idx]['times'].items():
+                temp_dic = {
+                    "station_id": station_id,
+                    "request_datetime": request_datetime,
+                    "data_datetime_"+k[1:]: v,
+                    "temp_"+k[1:]: self.response[idx]['temp'][k]
+                }
+                self.transformed_resp.append(temp_dic)
+        print(self.transformed_resp)
         return self
