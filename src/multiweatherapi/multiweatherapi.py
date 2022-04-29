@@ -21,6 +21,7 @@ class ApiWrapper:
         self.params = params
         self.resp_raw = None
         self.resp_parsed = None
+        self.resp_transformed = None
         self.resp_debug = None
 
         self.check_params()
@@ -97,7 +98,7 @@ class ApiWrapper:
                                    binding_ver=__version__)
             rreadings = RainwiseReadings(rparam)
             self.resp_raw = rreadings.response
-            self.resp_parsed = rreadings.parsed_resp
+            self.resp_transformed = rreadings.transformed_resp
             self.resp_debug = rreadings.debug_info
             return self
         elif self.vendor == 'campbell':
