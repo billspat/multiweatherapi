@@ -42,6 +42,7 @@ class ZentraParam:
         self.start_datetime = start_datetime
         self.end_datetime_org = end_datetime
         self.end_datetime = end_datetime
+        self.cur_datetime = datetime.now(timezone.utc)
         self.tz = tz
         self.conversion_msg = ''
         self.start_mrid = start_mrid
@@ -94,6 +95,7 @@ class ZentraParam:
             if self.end_datetime else None
         self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_datetime) + " \\ "
         print('Local time End date: {}'.format(self.end_datetime))
+        self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
     def __format_time(self):
         self.__utc_to_local()
@@ -101,6 +103,7 @@ class ZentraParam:
             else datetime.now().strftime('%m-%d-%Y %H:%M')
         self.end_datetime = self.end_datetime.strftime('%m-%d-%Y %H:%M') if self.end_datetime \
             else datetime.now().strftime('%m-%d-%Y %H:%M')
+        self.cur_datetime = self.cur_datetime.strftime('%Y-%m-%d %H:%M:%S')
 
 
 class ZentraReadings:
@@ -110,10 +113,10 @@ class ZentraReadings:
     ----------
     request : Request
         a Request object defining the request made to the Zentra server
-    response : Response
-        a json response from the Zentra server
-    parsed_resp : list of dict
-        a parsed response from
+    response : list
+        a raw json response from the Zentra server combined with meta data
+    transformed_resp : list of dict
+        a transformed response from raw JSON file or raw JSON response
     debug_info : dict
         a dict structure consist of parameter name and values
     """
@@ -133,6 +136,8 @@ class ZentraReadings:
             'start_datetime': param.start_datetime,
             'end_datetime_org': param.end_datetime_org,
             'end_datetime': param.end_datetime,
+            'cur_datetime': param.cur_datetime,
+            'tz': param.tz,
             'conversion_msg': param.conversion_msg,
             'start_mrid': param.start_mrid,
             'end_mrid': param.end_mrid,
@@ -141,7 +146,7 @@ class ZentraReadings:
         }
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.__parse()
+            self.__transform()
         elif param.sn and param.token:
             self.__get(param.sn, param.token, param.start_datetime, param.end_datetime, param.start_mrid,
                        param.end_mrid)
@@ -151,7 +156,7 @@ class ZentraReadings:
             # build an empty ZentraToken
             self.request = None
             self.response = None
-            self.parsed_resp = None
+            self.transformed_resp = None
             # self.device_info = None
             # self.measurement_settings = None
             # self.time_settings = None
@@ -179,7 +184,7 @@ class ZentraReadings:
         """
         self.__build(sn, token, start_datetime, end_datetime, start_mrid, end_mrid)
         self.__make_request()
-        self.__parse()
+        self.__transform()
         return self
 
     def __build(self, sn, token, start_datetime=None, end_datetime=None, start_mrid=None, end_mrid=None):
@@ -218,6 +223,17 @@ class ZentraReadings:
         """
         Sends a token request to the Zentra API and stores the response.
         """
+        # prep response list
+        self.response = list()
+        metadata = {
+            "vendor": "zentra",
+            "station_id": self.debug_info['sn'],
+            "timezone": self.debug_info['tz'],
+            "start_datetime": self.debug_info['start_datetime'],
+            "end_datetime": self.debug_info['end_datetime'],
+            "request_time": self.debug_info['cur_datetime'],
+            "python_binding_version": self.debug_info['binding_ver']}
+        self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
         if resp.status_code != 200:
@@ -226,12 +242,11 @@ class ZentraReadings:
         elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
             raise Exception(
                 'Error: Device serial number entered does not exist')
-        self.response = resp.json()
+        self.response.append(resp.json())
         self.debug_info['response'] = self.response
-        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
-    def __parse(self):
+    def __transform(self):
         """
         Parses the response.
         """
