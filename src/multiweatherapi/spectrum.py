@@ -48,6 +48,7 @@ class SpectrumParam:
         self.end_datetime = end_datetime
         self.date_org = date
         self.date = date
+        self.cur_datetime = datetime.now(timezone.utc)
         self.tz = tz
         self.conversion_msg = ''
         self.count = count
@@ -109,6 +110,7 @@ class SpectrumParam:
             if self.date else None
         self.conversion_msg += 'Local time date after conversion: {}'.format(self.date) + " \\ "
         print('Local time End date: {}'.format(self.date))
+        self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
 
 class SpectrumReadings:
@@ -143,6 +145,8 @@ class SpectrumReadings:
             'end_datetime': param.end_datetime,
             'date_org': param.date_org,
             'date': param.date,
+            'cur_datetime': param.cur_datetime.strftime('%Y-%m-%d %H:%M:%S'),
+            'tz': param.tz,
             'conversion_msg': param.conversion_msg,
             'count': param.count,
             'json_str': param.json_file,
@@ -239,14 +243,24 @@ class SpectrumReadings:
         """
         Sends a token request to the Spectrum API and stores the response.
         """
+        # prep response list
+        self.response = list()
+        metadata = {
+            "vendor": "spectrum",
+            "station_id": self.debug_info['sn'],
+            "timezone": self.debug_info['tz'],
+            "start_datetime": self.debug_info['start_datetime'],
+            "end_datetime": self.debug_info['end_datetime'],
+            "request_time": self.debug_info['cur_datetime'],
+            "python_binding_version": self.debug_info['binding_ver']}
+        self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
         if resp.status_code != 200:
             raise Exception(
                 'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
-        self.response = resp.json()
+        self.response.append(resp.json())
         self.debug_info['response'] = self.response
-        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
     def __parse(self):
