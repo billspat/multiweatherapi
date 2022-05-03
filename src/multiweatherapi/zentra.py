@@ -250,11 +250,18 @@ class ZentraReadings:
         """
         Parses the response.
         """
-        self.parsed_resp = []
-        # try:
-        #     self.device_info = self.response['device']['device_info']
-        # except KeyError:
-        #     self.device_info = 'N/A'
-        # self.timeseries = list(
-        #     map(lambda x: ZentraTimeseriesRecord(x), self.response['device']['timeseries']))
+        self.transformed_resp = list()
+        station_id = self.response[0]['station_id']
+        request_datetime = self.response[0]['request_time']
+        for idx in range(1, len(self.response)):
+            temp_readings = self.response[idx]['data']['Air Temperature'][0]["readings"]
+            for jdx in range(len(temp_readings)):
+                temp_dic = {
+                    "station_id": station_id,
+                    "request_datetime": request_datetime,
+                    "data_datetime_"+str(jdx): temp_readings[jdx]['datetime'][:-6],
+                    "temp_"+str(jdx): temp_readings[jdx]['value']
+                }
+                self.transformed_resp.append(temp_dic)
+        print(self.transformed_resp)
         return self
