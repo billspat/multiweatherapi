@@ -42,7 +42,7 @@ class ApiWrapper:
                                  binding_ver=__version__)
             zreadings = ZentraReadings(zparam)
             self.resp_raw = zreadings.response
-            self.resp_parsed = zreadings.parsed_resp
+            self.resp_transformed = zreadings.transformed_resp
             self.resp_debug = zreadings.debug_info
             return self
         elif self.vendor == 'davis':
