@@ -68,7 +68,7 @@ class ApiWrapper:
                                    binding_ver=__version__)
             sreadings = SpectrumReadings(sparam)
             self.resp_raw = sreadings.response
-            self.resp_parsed = sreadings.parsed_resp
+            self.resp_transformed = sreadings.transformed_resp
             self.resp_debug = sreadings.debug_info
             return self
         elif self.vendor == 'onset':
