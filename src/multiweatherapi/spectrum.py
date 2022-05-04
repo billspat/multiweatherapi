@@ -122,8 +122,8 @@ class SpectrumReadings:
         a Request object defining the request made to the Spectrum server
     response : Response
         a json response from the Spectrum server
-    parsed_resp : list of dict
-        a parsed response from
+    transformed_resp : list of dict
+        a transformed response from raw JSON file or raw JSON response
     debug_info : dict
         a dict structure consist of parameter name and values
     """
@@ -154,7 +154,7 @@ class SpectrumReadings:
         }
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.__parse()
+            self.__transform()
         elif param.sn and param.apikey:
             self.__get(param.sn, param.apikey, param.start_datetime, param.end_datetime, param.date, param.count)
         elif param.sn or param.apikey:
@@ -163,7 +163,7 @@ class SpectrumReadings:
             # build an empty Spectrum apikey
             self.request = None
             self.response = None
-            self.parsed_resp = None
+            self.transformed_resp = None
             # self.device_info = None
             # self.measurement_settings = None
             # self.time_settings = None
@@ -193,7 +193,7 @@ class SpectrumReadings:
         """
         self.__build(sn, apikey, start_datetime, end_datetime, date, count)
         self.__make_request()
-        self.__parse()
+        self.__transform()
         return self
 
     def __build(self, sn, apikey, start_datetime=None, end_datetime=None, date=None, count=None):
@@ -248,11 +248,14 @@ class SpectrumReadings:
         metadata = {
             "vendor": "spectrum",
             "station_id": self.debug_info['sn'],
+            "start_datetime": self.debug_info['start_datetime'].strftime('%Y-%m-%d %H:%M:%S') if
+            self.debug_info['start_datetime'] else None,
+            "end_datetime": self.debug_info['end_datetime'].strftime('%Y-%m-%d %H:%M:%S') if
+            self.debug_info['end_datetime'] else None,
             "timezone": self.debug_info['tz'],
-            "start_datetime": self.debug_info['start_datetime'],
-            "end_datetime": self.debug_info['end_datetime'],
             "request_time": self.debug_info['cur_datetime'],
             "python_binding_version": self.debug_info['binding_ver']}
+
         self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
@@ -263,15 +266,25 @@ class SpectrumReadings:
         self.debug_info['response'] = self.response
         return self
 
-    def __parse(self):
+    def __transform(self):
         """
         Parses the response.
         """
-        self.parsed_resp = []
-        # try:
-        #     self.device_info = self.response['device']['device_info']
-        # except KeyError:
-        #     self.device_info = 'N/A'
-        # self.timeseries = list(
-        #     map(lambda x: SpectrumTimeseriesRecord(x), self.response['device']['timeseries']))
+        self.transformed_resp = list()
+        station_id = self.response[0]['station_id']
+        request_datetime = self.response[0]['request_time']
+        for idx in range(1, len(self.response)):
+            equipment_rec = self.response[idx]['EquipmentRecords']
+            for jdx in range(len(equipment_rec)):
+                sensor_data = equipment_rec[jdx]['SensorData']
+                temp_dict = {
+                    "station_id": station_id,
+                    "request_datetime": request_datetime,
+                }
+                for kdx in range(len(sensor_data)):
+                    if sensor_data[kdx]['SensorType'] == 'Temperature':
+                        temp_dict['data_datetime_'+str(jdx)] = sensor_data[kdx]['FormattedTimeStamp']
+                        temp_dict['temp_'+str(jdx)] = sensor_data[kdx]['Value']
+                self.transformed_resp.append(temp_dict)
+        print(self.transformed_resp)
         return self
