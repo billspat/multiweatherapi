@@ -35,31 +35,41 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
   To calculate the signature use the HMAC SHA-256 algorithm with the concatenated parameter string as the message and the API Secret as the HMAC secret key. The resulting computed HMAC value as a hexadecimal string is the API Signature. Sample of computing API Signature is shown below:
 
   ```python
-  def compute_signature(self):
-    params = {
-      'api-key': self.apikey,
-      'station-id': self.sn,
-      't': self.t
-    }
-    if self.start_date and self.end_date:
-      params['start-timestamp'] = self.start_date
-      params['end-timestamp'] = self.end_date
+      def __compute_signature(self):
+          def compute_signature_engine():  # compute_engine
+              for key in params:
+                  print("Parameter name: \"{}\" has value \"{}\"".format(key, params[key]))
   
-    params = collections.OrderedDict(sorted(params.items()))
-    for key in params:
-      print("Parameter name: \"{}\" has value \"{}\"".format(key, params[key]))
+              data = ""
+              for key in params:
+                  data = data + key + str(params[key])
+              print("Data string to hash is: \"{}\"".format(data))
   
-    data = ""
-    for key in params:
-      data = data + key + str(params[key])
-    print("Data string to hash is: \"{}\"".format(data))
+              sig = hmac.new(
+                  self.apisec.encode('utf-8'),
+                  data.encode('utf-8'),
+                  hashlib.sha256).hexdigest()
+              print("API Signature is: \"{}\"".format(sig))
+              return sig
   
-    self.apisig = hmac.new(
-      self.apisec.encode('utf-8'),
-      data.encode('utf-8'),
-      hashlib.sha256
-    ).hexdigest()
-    print("API Signature is: \"{}\"".format(self.apisig))
+          if self.start_date and self.end_date:  # if datetime is specified
+              temp_list = list()
+              for st, ed in self.date_tuple_list:
+                  params = {'api-key': self.apikey,
+                            'station-id': self.sn,
+                            't': self.t,
+                            'start-timestamp': st,
+                            'end-timestamp': ed}
+                  params = collections.OrderedDict(sorted(params.items()))
+                  apisig = compute_signature_engine()
+                  temp_list.append((st, ed, apisig))
+              self.date_tuple_list = temp_list
+              for elem in self.date_tuple_list:
+                  print(elem)
+          else:
+              params = {'api-key': self.apikey, 'station-id': self.sn, 't': self.t}
+              params = collections.OrderedDict(sorted(params.items()))
+              self.apisig = compute_signature_engine()
   ```
 
 ### Endpoint in Action
@@ -108,6 +118,8 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
    
    - Sample output [JSON File](https://michiganstate.sharepoint.com/sites/Geography-EnviroweatherTeam/_layouts/15/download.aspx?UniqueId=91c9b9303d9f453897e04104f7cca03f&e=yNpYKQ) may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
    
+   > NOTE: While API does not allow timestamp range greater than 24 hours, our Python binding will automatically break-down into less than 24hr chunks, make separate API calls and then return the combined responses.   
+   
 3. Addtional Endpoint information
 
    - Full information about the Davis (WeatherLink) API can be found at https://weatherlink.github.io/v2-api/api-reference. This site includes all available API calls, their correct use and formatting.
@@ -116,15 +128,28 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
 
 - Required Parameters
 
-| Name       | Contents                           | Type     |
-| ---------- | ---------------------------------- | -------- |
-| sn         | Station ID                         | str      |
-| apikey     | Client-specific value              | str      |
-| apisec     | Client-specific value              | str      |
-| start_date | Start date and time (UTC expected) | datetime |
-| end_date   | End date and time (UTC expected)   | datetime |
+| Name           | Contents                           | Type                |
+| -------------- | ---------------------------------- | ------------------- |
+| sn             | Station ID                         | str                 |
+| apikey         | Client-specific value              | str                 |
+| apisec         | Client-specific value              | str                 |
+| start_datetime | Start date and time (UTC expected) | datetime (optional) |
+| end_datetime   | End date and time (UTC expected)   | datetime (optional) |
 
-> NOTE: For date/time range to correctly work, both parameters should be in UTC timezone
+> NOTE: For date and time range to correctly work, both `start_datetime` and `end_datetime` parameters should be in UTC time zone
+
+- 24hr+ Data Polling
+
+  Goal is to overcome Davis weation station API design limitation of only allowing up to 24hrs of data. Our Python binding detects time span, breakdown into `<`24hr datetime chunks, makes API calls for each datetime chunk, returns combined JSON responses.
+
+  1. As API parameters are passed using `DavisParam` class, date/time range is calculated and split into 23:59:59 chunks then stored as a tuple in a list
+     - [ (st_date1, ed_date1), (st_date2, ed_date2), ... ]
+
+  2. Format time routine iterates the datetime tuple list and add explicit time zone (UTC) information to both start_datetime and end_datetime then convert into Unix Epoch time
+  3. API signature (authentication purposes) is computed for each start_datetime and end_datetime pair and stored as three-element tuple
+     - [ (st_date1, ed_date1, apisig1), (st_date2, ed_date2, apisig2), ... ]
+  4. `DavisReading` class takes the `DavisParam` class and builds Request object for each `start_datetime`, `end_datetime` and `API_signature` tuple
+  5. API call is made ***sequentially***, and each JSON response is serialized and appended to a list
 
 - Usage
 
@@ -133,8 +158,8 @@ params = {
     'sn': STATION_ID,
     'apikey': API_KEY,
     'apisec': API_SECURITY,
-    'start_date': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_date': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
+    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
+    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
 }
 dparams = DavisParam(**params)
 dreadings = DavisReadings(dparams)

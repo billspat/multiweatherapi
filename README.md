@@ -41,9 +41,23 @@ Refer to the respective link below for parameter and authentication requirements
 
 Python 3.6 and higher are supported.
 
+### Supported Station Time Zones
+
+Currently following time zones are supported:
+
+| Name | Description |
+| ---- | ----------- |
+| HT   | US/Hawaii   |
+| AT   | US/Alaska   |
+| PT   | US/Pacific  |
+| MT   | US/Mountain |
+| CT   | US/Central  |
+| ET   | US/Eastern  |
+
 ### Requirements
 
 - [Requests](https://docs.python-requests.org/en/latest/)
+- [pytz](https://pythonhosted.org/pytz/)
 
 ### Outputs
 

@@ -98,14 +98,17 @@ Spectrum weather station API requires an ***API Key*** that is a customer-specif
 
 - Required Parameters
 
-| Name       | Contents                                     | Type     |
-| ---------- | -------------------------------------------- | -------- |
-| sn         | Device Serial Number (serialNumber)          | str      |
-| apikey     | API Key (customerApiKey)                     | str      |
-| start_date | Start date and time (UTC time zone expected) | datetime |
-| end_date   | End date and time (UTC time zone expected)   | datetime |
+| Name           | Contents                                                     | Type     |
+| -------------- | ------------------------------------------------------------ | -------- |
+| sn             | Device Serial Number (serialNumber)                          | str      |
+| apikey         | API Key (customerApiKey)                                     | str      |
+| start_datetime | Start date and time (UTC time zone expected)                 | datetime |
+| end_datetime   | End date and time (UTC time zone expected)                   | datetime |
+| tz             | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | str      |
 
-> NOTE: start_date & end_date must be in UTC time zone for Python binding to correctly interpret date/time
+> NOTE: start_datetime & end_datetime must be in UTC time zone for Python binding to correctly interpret date and time
+
+> NOTE: HT: Hawaii Time / AT: Alaska Time / PT: Pacific Time / MT: Mountain Time / CT: Central Time / ET: Eastern Time
 
 - Usage
 
@@ -113,8 +116,9 @@ Spectrum weather station API requires an ***API Key*** that is a customer-specif
 params = {
     'sn': DEVICE_SN,
     'apikey': API_KEY,
-    'start_date': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_date': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
+    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
+    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M'),
+    'tz' : 'ET'
 }
 sparams = SpectrumParam(**params)
 sreadings = SpectrumReadings(sparams)

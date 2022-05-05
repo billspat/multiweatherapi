@@ -47,16 +47,21 @@ Rainwise weather station API does not require real-time authentication process; 
 
 - Parameters
 
-| Name       | Description                                                  | Type     | Required |
-| ---------- | ------------------------------------------------------------ | -------- | -------- |
-| username   | Registered Group Name                                        | str      | Y        |
-| sid        | Site id                                                      | str      | Y        |
-| pid        | Password id                                                  | str      | Y        |
-| mac        | MAC of the weather station                                   | str      | Y        |
-| ret_form   | Returns data as XML or JSON, If omitted data is returned as XML | str      | N        |
-| interval   | Data aggregation interval, 1,5,10,15,30 or 60min (default 1min) | int      | N        |
-| start_date | Start date and time. If omitted set to current time (UTC expected) | datetime | N        |
-| end_date   | End date and time. If omitted set to current time (UTC expected) | datetime | N        |
+| Name           | Description                                                  | Type     | Required                     |
+| -------------- | ------------------------------------------------------------ | -------- | ---------------------------- |
+| username       | Registered Group Name                                        | str      | Y                            |
+| sid            | Site id                                                      | str      | Y                            |
+| pid            | Password id                                                  | str      | Y                            |
+| mac            | MAC of the weather station                                   | str      | Y                            |
+| ret_form       | Returns data as XML or JSON, If omitted data is returned as XML | str      | N                            |
+| interval       | Data aggregation interval, 1,5,10,15,30 or 60min (default 1min) | int      | N                            |
+| start_datetime | Start date and time. If omitted set to current time (UTC expected) | datetime | N                            |
+| end_datetime   | End date and time. If omitted set to current time (UTC expected) | datetime | N                            |
+| tz             | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | str      | N (Y if date/time is passed) |
+
+> NOTE: start_datetime & end_datetime must be in UTC time zone for Python binding to correctly interpret date and time
+
+> NOTE: HT: Hawaii Time / AT: Alaska Time / PT: Pacific Time / MT: Mountain Time / CT: Central Time / ET: Eastern Time
 
 - Usage
 
@@ -68,8 +73,9 @@ params = {
     'mac': STATION_MAC_ADDR,
   	'ret_form': 'json',
   	'interval': 1,
-    'start_date': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_date': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
+    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
+    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M'),
+    'tz' : 'ET'
 }
 rparams = RainwiseParam(**params)
 rreadings = RainwiseReadings(rparams)

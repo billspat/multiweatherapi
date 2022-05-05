@@ -26,13 +26,13 @@ class CampbellParam:
         Alphanumeric ID of the station (for v3 APIs)
     station_lid : str
         Alphanumeric Legacy ID of the station (for v2 APIs)
-    start_date_org : datetime
+    start_datetime_org : datetime
         Stores datetime object passed initially
-    start_date : datetime
+    start_datetime : datetime
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-    end_date_org : datetime
+    end_datetime_org : datetime
         Stores datetime object passed initially
-    end_date : datetime
+    end_datetime : datetime
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     conversion_msg : str
         Stores time conversion message
@@ -42,7 +42,7 @@ class CampbellParam:
         Python binding version
     """
     def __init__(self, username=None, user_passwd=None, station_id=None,
-                 station_lid=None, start_date=None, end_date=None, json_file=None, binding_ver=None):
+                 station_lid=None, start_datetime=None, end_datetime=None, json_file=None, binding_ver=None):
 
         self.username = username
         self.user_passwd = user_passwd
@@ -54,10 +54,10 @@ class CampbellParam:
         self.station_id = station_id
         self.station_lid = station_lid
 
-        self.start_date_org = start_date
-        self.start_date = start_date
-        self.end_date_org = end_date
-        self.end_date = end_date
+        self.start_datetime_org = start_datetime
+        self.start_datetime = start_datetime
+        self.end_datetime_org = end_datetime
+        self.end_datetime = end_datetime
         self.conversion_msg = ''
         self.json_file = json_file
         self.binding_ver = binding_ver
@@ -76,32 +76,39 @@ class CampbellParam:
         self.credentials = {'username': self.username, 'password': self.user_passwd}
         if self.station_id is None or self.station_lid is None:
             raise Exception('station_id and station_lid parameters must be included')
-        if self.start_date and not isinstance(self.start_date, datetime):
-            raise Exception('start_date must be datetime.datetime instance')
-        if self.end_date and not isinstance(self.end_date, datetime):
-            raise Exception('end_date must be datetime.datetime instance')
-        if self.start_date and self.end_date and (self.start_date > self.end_date):
-            raise Exception('start_date must be earlier than end_date')
+        if self.start_datetime and not isinstance(self.start_datetime, datetime):
+            raise Exception('start_datetime must be datetime.datetime instance')
+        if self.end_datetime and not isinstance(self.end_datetime, datetime):
+            raise Exception('end_datetime must be datetime.datetime instance')
+        if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
+            raise Exception('start_datetime must be earlier than end_datetime')
+        if not self.json_file and not (self.start_datetime and self.end_datetime):
+            raise Exception('state_datetime and end_datetime must be specified')
         print("user credentials: {} type - {}".format(type(self.credentials), self.credentials))
 
     def __utc_to_local(self):
-        print('UTC Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_date) + " \\ "
-        self.start_date = self.start_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.start_date else None
-        print('Local time Start date: {}'.format(self.start_date))
-        self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_date) + " \\ "
+        print('UTC Start date: {}'.format(self.start_datetime))
+        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_datetime) + " \\ "
+        self.conversion_msg += 'Campbell utilizes Unix Epoch, just added explicit UTC timezone' + " \\ "
+        # self.start_datetime = self.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None) \
+        #     if self.start_datetime else None
+        self.start_datetime = self.start_datetime.replace(tzinfo=timezone.utc) if self.start_datetime else None
+        print('Explicit UTC time Start date: {}'.format(self.start_datetime))
+        self.conversion_msg += 'Explicit UTC time start date after conversion: {}'.format(self.start_datetime) + " \\ "
 
-        print('UTC End date: {}'.format(self.end_date))
-        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_date) + " \\ "
-        self.end_date = self.end_date.replace(tzinfo=timezone.utc).astimezone(tz=None) if self.end_date else None
-        self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_date) + " \\ "
-        print('Local time End date: {}'.format(self.end_date))
+        print('UTC End date: {}'.format(self.end_datetime))
+        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_datetime) + " \\ "
+        # self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        # if self.end_datetime else None
+        self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc) if self.end_datetime else None
+        self.conversion_msg += 'Explicit UTC time end date after conversion: {}'.format(self.end_datetime) + " \\ "
+        print('Explicit UTC time End date: {}'.format(self.end_datetime))
 
     def __format_time(self):
         self.__utc_to_local()
-        self.start_date = int(self.start_date.timestamp()*1000) if self.start_date \
+        self.start_datetime = int(self.start_datetime.timestamp()*1000) if self.start_datetime \
             else int(datetime.now().timestamp()*1000)
-        self.end_date = int(self.end_date.timestamp()*1000) if self.end_date \
+        self.end_datetime = int(self.end_datetime.timestamp()*1000) if self.end_datetime \
             else int(datetime.now().timestamp()*1000)
 
     def __get_auth(self):
@@ -186,10 +193,10 @@ class CampbellReadings:
         """
         self.debug_info = {
             'station_lid': param.station_lid,
-            'start_date_org': param.start_date_org,
-            'start_date': param.start_date,
-            'end_date_org': param.end_date_org,
-            'end_date': param.end_date,
+            'start_datetime_org': param.start_datetime_org,
+            'start_datetime': param.start_datetime,
+            'end_datetime_org': param.end_datetime_org,
+            'end_datetime': param.end_datetime,
             'conversion_msg': param.conversion_msg,
             'measurements': param.measurements,
             'access_token': param.access_token,
@@ -200,7 +207,8 @@ class CampbellReadings:
             self.response = json.load(open(param.json_file))
             self.__parse()
         elif param.station_lid and param.access_token:
-            self.__get(param.station_lid, param.start_date, param.end_date, param.measurements, param.access_token)
+            self.__get(param.station_lid, param.start_datetime, param.end_datetime, param.measurements,
+                       param.access_token)
         elif param.station_lid or param.access_token:
             raise Exception('"station_id" and "access_token" parameters must both be included.')
         else:

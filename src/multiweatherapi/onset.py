@@ -18,13 +18,13 @@ class OnsetParam:
         The format data should be returned in. Currently only JSON is supported.
     user_id : str
         numeric ID of the user account This can be pulled from the HOBOlink URL: www.hobolink.com/users/<user_id>
-    start_date_org : datetime
+    start_datetime_org : datetime
         Stores datetime object passed initially
-    start_date : datetime
+    start_datetime : datetime
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-    end_date_org : datetime
+    end_datetime_org : datetime
         Stores datetime object passed initially
-    end_date : datetime
+    end_datetime : datetime
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     conversion_msg : str
         Stores time conversion message
@@ -33,8 +33,8 @@ class OnsetParam:
     binding_ver : str
         Python binding version
     """
-    def __init__(self, sn=None, client_id=None, client_secret=None, ret_form=None, user_id=None, start_date=None,
-                 end_date=None, json_file=None, binding_ver=None):
+    def __init__(self, sn=None, client_id=None, client_secret=None, ret_form=None, user_id=None, start_datetime=None,
+                 end_datetime=None, json_file=None, binding_ver=None):
         self.sn = sn
         self.client_id = client_id
         self.client_secret = client_secret
@@ -42,10 +42,10 @@ class OnsetParam:
         self.ret_form = ret_form
         self.user_id = user_id
         self.path_param = None
-        self.start_date_org = start_date
-        self.start_date = start_date
-        self.end_date_org = end_date
-        self.end_date = end_date
+        self.start_datetime_org = start_datetime
+        self.start_datetime = start_datetime
+        self.end_datetime_org = end_datetime
+        self.end_datetime = end_datetime
         self.conversion_msg = ''
         self.json_file = json_file
         self.binding_ver = binding_ver
@@ -55,12 +55,14 @@ class OnsetParam:
         self.__get_auth()
 
     def __check_params(self):
-        if self.start_date and not isinstance(self.start_date, datetime):
-            raise Exception('start_date must be datetime.datetime instance')
-        if self.end_date and not isinstance(self.end_date, datetime):
-            raise Exception('end_date must be datetime.datetime instance')
-        if self.start_date and self.end_date and (self.start_date > self.end_date):
-            raise Exception('start_date must be earlier than end_date')
+        if self.start_datetime and not isinstance(self.start_datetime, datetime):
+            raise Exception('start_datetime must be datetime.datetime instance')
+        if self.end_datetime and not isinstance(self.end_datetime, datetime):
+            raise Exception('end_datetime must be datetime.datetime instance')
+        if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
+            raise Exception('start_datetime must be earlier than end_datetime')
+        if not self.json_file and not (self.start_datetime and self.end_datetime):
+            raise Exception('state_datetime and end_datetime must be specified')
         if self.client_id is None or self.client_secret is None:
             raise Exception('client_id and client_secret parameters must be included')
         if self.ret_form is None or self.ret_form != 'JSON':
@@ -70,10 +72,11 @@ class OnsetParam:
         self.path_param = {'format': self.ret_form, 'userId': self.user_id}
 
     def __format_time(self):
-        # self.start_date = self.start_date.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S') if self.start_date \
-        self.start_date = self.start_date.strftime('%Y-%m-%d %H:%M:%S') if self.start_date \
+        # self.start_datetime = self.start_datetime.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        # if self.start_datetime \
+        self.start_datetime = self.start_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.start_datetime \
             else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-        self.end_date = self.end_date.strftime('%Y-%m-%d %H:%M:%S') if self.end_date \
+        self.end_datetime = self.end_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.end_datetime \
             else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         self.conversion_msg += 'Onset API utilize UTC timestamp as is thus does not require conversion'
 
@@ -125,10 +128,10 @@ class OnsetReadings:
             'sn': param.sn,
             'access_token': param.access_token,
             'path_param': param.path_param,
-            'start_date_org': param.start_date_org,
-            'start_date': param.start_date,
-            'end_date_org': param.end_date_org,
-            'end_date': param.end_date,
+            'start_datetime_org': param.start_datetime_org,
+            'start_datetime': param.start_datetime,
+            'end_datetime_org': param.end_datetime_org,
+            'end_datetime': param.end_datetime,
             'conversion_msg': param.conversion_msg,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
@@ -137,7 +140,7 @@ class OnsetReadings:
             self.response = json.load(open(param.json_file))
             self.__parse()
         elif param.sn and param.access_token:
-            self.__get(param.sn, param.access_token, param.path_param, param.start_date, param.end_date)
+            self.__get(param.sn, param.access_token, param.path_param, param.start_datetime, param.end_datetime)
         elif param.sn or param.access_token:
             raise Exception('"sn" and "access_token" parameters must both be included.')
         else:
@@ -151,7 +154,7 @@ class OnsetReadings:
             # self.locations = None
             # self.installation_metadata = None
 
-    def __get(self, sn, access_token, path_param, start_date, end_date):
+    def __get(self, sn, access_token, path_param, start_datetime, end_datetime):
         """
         Gets a device readings using a GET request to the Onset API.
         Wraps build and parse functions.
@@ -163,17 +166,17 @@ class OnsetReadings:
             The user's access token generated by OAuth protocol
         path_param : dict
             Path parameters used to formulate the endpoint during runtime
-        start_date : str
-            Return readings with timestamps ≥ start_date.
-        end_date : str
-            Return readings with timestamps ≤ end_date.
+        start_datetime : str
+            Return readings with timestamps ≥ start_datetime.
+        end_datetime : str
+            Return readings with timestamps ≤ end_datetime.
         """
-        self.__build(sn, access_token, path_param, start_date, end_date)
+        self.__build(sn, access_token, path_param, start_datetime, end_datetime)
         self.__make_request()
         self.__parse()
         return self
 
-    def __build(self, sn, access_token, path_param, start_date, end_date):
+    def __build(self, sn, access_token, path_param, start_datetime, end_datetime):
         """
         Gets a device readings using a GET request to the Onset API.
         Parameters
@@ -184,10 +187,10 @@ class OnsetReadings:
             The user's access token generated by OAuth protocol
         path_param : dict
             Path parameters used to formulate the endpoint during runtime
-        start_date : str
-            Return readings with timestamps ≥ start_date.
-        end_date : str
-            Return readings with timestamps ≤ end_date.
+        start_datetime : str
+            Return readings with timestamps ≥ start_datetime.
+        end_datetime : str
+            Return readings with timestamps ≤ end_datetime.
         """
         self.request = Request('GET',
                                url='https://webservice.hobolink.com/ws/data/file/{format}/user/{userId}'.format(
@@ -195,8 +198,8 @@ class OnsetReadings:
                                headers={
                                    'Authorization': "Bearer " + access_token},
                                params={'loggers': sn,
-                                       'start_date_time': start_date,
-                                       'end_date_time': end_date}).prepare()
+                                       'start_date_time': start_datetime,
+                                       'end_date_time': end_datetime}).prepare()
         self.debug_info['http_method'] = self.request.method
         self.debug_info['url'] = self.request.url
         self.debug_info['headers'] = self.request.headers
