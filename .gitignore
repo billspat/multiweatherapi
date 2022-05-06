@@ -1,0 +1,17 @@
+# Python Byte-compiled 
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+
+# config
+.env
+env.bak/
+.env_testing
+
+# editors/OS
+.vscode
+.DS_Store
+.spyderproject
+.spyproject
+.idea/
