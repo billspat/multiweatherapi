@@ -29,6 +29,8 @@ class ApiWrapper:
     def check_params(self):
         if self.vendor is None or self.vendor.lower() not in self.vendor_list:
             raise Exception('"vendor" must be specified and in the approved vendor list.')
+        else:
+            self.vendor = self.vendor.lower()
 
     def get_reading(self):
         if self.vendor == 'zentra':
