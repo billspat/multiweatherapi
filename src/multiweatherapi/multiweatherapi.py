@@ -53,10 +53,11 @@ class ApiWrapper:
                                 apisec=self.params.get('apisec', None),
                                 start_datetime=self.params.get('start_datetime', None),
                                 end_datetime=self.params.get('end_datetime', None),
+                                tz=self.params.get('tz', None),
                                 binding_ver=__version__)
             dreadings = DavisReadings(dparam)
-            self.resp_raw = dreadings.responses
-            self.resp_parsed = dreadings.parsed_resp
+            self.resp_raw = dreadings.response
+            self.resp_transformed = dreadings.transformed_resp
             self.resp_debug = dreadings.debug_info
             return self
         elif self.vendor == 'spectrum':
