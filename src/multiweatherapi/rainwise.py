@@ -283,8 +283,8 @@ class RainwiseReadings:
                 temp_dic = {
                     "station_id": station_id,
                     "request_datetime": request_datetime,
-                    "data_datetime_"+k[1:]: v,
-                    "temp_"+k[1:]: self.response[idx]['temp'][k]
+                    "data_datetime": v,
+                    "atemp": self.response[idx]['temp'][k]
                 }
                 self.transformed_resp.append(temp_dic)
         print(self.transformed_resp)
