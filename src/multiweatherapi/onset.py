@@ -29,13 +29,15 @@ class OnsetParam:
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     conversion_msg : str
         Stores time conversion message
+    sensor_sn : dict
+        a dict of sensor serial numbers
     json_file : str, optional
         The path to a local json file to parse.
     binding_ver : str
         Python binding version
     """
     def __init__(self, sn=None, client_id=None, client_secret=None, ret_form=None, user_id=None, start_datetime=None,
-                 end_datetime=None, tz=None, json_file=None, binding_ver=None):
+                 end_datetime=None, tz=None, sensor_sn=None, json_file=None, binding_ver=None):
         self.sn = sn
         self.client_id = client_id
         self.client_secret = client_secret
@@ -50,6 +52,7 @@ class OnsetParam:
         self.cur_datetime = datetime.now(timezone.utc)
         self.tz = tz
         self.conversion_msg = ''
+        self.sensor_sn_dict = sensor_sn
         self.json_file = json_file
         self.binding_ver = binding_ver
 
@@ -148,9 +151,9 @@ class OnsetReadings:
     request : Request
         a Request object defining the request made to the Onset server
     response : Response
-        a json response from the Onset server
-    parsed_resp : list of dict
-        a parsed response from
+        a raw json response from the Onset server combined with meta data
+    transformed_resp : list of dict
+        a transformed response from raw JSON file or raw JSON response
     debug_info : dict
         a dict structure consist of parameter name and values
     """
@@ -174,12 +177,13 @@ class OnsetReadings:
             'cur_datetime': param.cur_datetime,
             'tz': param.tz,
             'conversion_msg': param.conversion_msg,
+            'sensor_sn': param.sensor_sn_dict,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.__parse()
+            self.__transform()
         elif param.sn and param.access_token:
             self.__get(param.sn, param.access_token, param.path_param, param.start_datetime, param.end_datetime)
         elif param.sn or param.access_token:
@@ -188,7 +192,7 @@ class OnsetReadings:
             # build an empty OnsetToken
             self.request = None
             self.response = None
-            self.parsed_resp = None
+            self.transformed_resp = None
             # self.device_info = None
             # self.measurement_settings = None
             # self.time_settings = None
@@ -214,7 +218,7 @@ class OnsetReadings:
         """
         self.__build(sn, access_token, path_param, start_datetime, end_datetime)
         self.__make_request()
-        self.__parse()
+        self.__transform()
         return self
 
     def __build(self, sn, access_token, path_param, start_datetime, end_datetime):
@@ -273,15 +277,23 @@ class OnsetReadings:
         self.debug_info['response'] = self.response
         return self
 
-    def __parse(self):
+    def __transform(self):
         """
         Parses the response.
         """
-        self.parsed_resp = []
-        # try:
-        #     self.device_info = self.response['device']['device_info']
-        # except KeyError:
-        #     self.device_info = 'N/A'
-        # self.timeseries = list(
-        #     map(lambda x: OnsetTimeseriesRecord(x), self.response['device']['timeseries']))
+        self.transformed_resp = list()
+        station_id = self.response[0]['station_id']
+        request_datetime = self.response[0]['request_time']
+        for idx in range(1, len(self.response)):
+            observe_list = self.response[idx]['observation_list']
+            for kdx in range(len(observe_list)):
+                if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
+                    temp_dic = {
+                        "station_id": station_id,
+                        "request_datetime": request_datetime,
+                        "data_datetime": observe_list[kdx]['timestamp'],
+                        "atemp": observe_list[kdx]['si_value']
+                    }
+                    self.transformed_resp.append(temp_dic)
+        print(self.transformed_resp)
         return self
