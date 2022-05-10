@@ -172,8 +172,8 @@ class DavisReadings:
         a list of Request objects defining the request made to the Davis server
     response : list
         a (combined) raw json responses from the Davis server
-    parsed_resp : list of dict
-        a parsed response from
+    transformed_resp : list of dict
+        a transformed response from raw JSON file or raw JSON response
     debug_info : dict
         a dict structure consist of parameter name and values
     """
@@ -204,7 +204,7 @@ class DavisReadings:
 
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.__parse()
+            self.__transform()
         elif param.sn and param.apikey:
             self.__get(param.sn, param.apikey, param.apisig, param.date_tuple_list, param.t)
         elif param.sn or param.apikey:
@@ -213,7 +213,7 @@ class DavisReadings:
             # build an empty DavisToken
             self.request = None
             self.response = None
-            self.parsed_resp = None
+            self.transformed_resp = None
             # self.device_info = None
             # self.measurement_settings = None
             # self.time_settings = None
@@ -239,7 +239,7 @@ class DavisReadings:
         """
         self.__build(sn, apikey, apisig, date_tuple_list, t)
         self.__make_request()
-        self.__parse()
+        self.__transform()
         return self
 
     def __build(self, sn, apikey, apisig, date_tuple_list: list, t):
@@ -274,7 +274,7 @@ class DavisReadings:
                                   params={'api-key': apikey, 't': t, 'api-signature': apisig}).prepare()
             self.request.append(tmp_request)
 
-        self.debug_info['requests'] = self.requests
+        self.debug_info['request'] = self.request
         # self.debug_info['http_method'] = self.request.method
         # self.debug_info['url'] = self.request.url
         # self.debug_info['headers'] = self.request.headers
@@ -304,15 +304,41 @@ class DavisReadings:
             # self.debug_info['response'] = self.response
         return self
 
-    def __parse(self):
+    def __transform(self):
         """
-        Parses the response.
+        Transform the response.
         """
-        self.parsed_resp = list()
-        # try:
-        #     self.device_info = self.response['device']['device_info']
-        # except KeyError:
-        #     self.device_info = 'N/A'
-        # self.timeseries = list(
-        #     map(lambda x: DavisTimeseriesRecord(x), self.response['device']['timeseries']))
+        def epoch_converter(epoch, time_zone):
+            tzlist = {
+                'HT': 'US/Hawaii',
+                'AT': 'US/Alaska',
+                'PT': 'US/Pacific',
+                'MT': 'US/Mountain',
+                'CT': 'US/Central',
+                'ET': 'US/Eastern'
+            }
+            utc_dt = datetime.utcfromtimestamp(epoch).replace(tzinfo=pytz.utc)
+            tz = pytz.timezone(tzlist[time_zone])
+            dt = utc_dt.astimezone(tz)
+            return dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        self.transformed_resp = list()
+        station_id = self.response[0]['station_id']
+        request_datetime = self.response[0]['request_time']
+        for idx in range(1, len(self.response)):
+            sensors = self.response[idx]['sensors']
+            for jdx in range(len(sensors)):
+                data = sensors[jdx]['data']
+                for kdx in range(len(data)):
+                    if "temp_out" not in data[kdx]:
+                        break
+                    else:
+                        temp_dic = {
+                            "station_id": station_id,
+                            "request_datetime": request_datetime,
+                            "data_datetime": epoch_converter(data[kdx]['ts'], self.response[0]['timezone']),
+                            "atemp": data[kdx]['temp_out']
+                        }
+                        self.transformed_resp.append(temp_dic)
+        print(self.transformed_resp)
         return self
