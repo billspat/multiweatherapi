@@ -20,7 +20,6 @@ class ApiWrapper:
         self.vendor = params.get('vendor', None)
         self.params = params
         self.resp_raw = None
-        self.resp_parsed = None
         self.resp_transformed = None
         self.resp_debug = None
 
@@ -111,10 +110,11 @@ class ApiWrapper:
                                    station_lid=self.params.get('station_lid', None),
                                    start_datetime=self.params.get('start_datetime', None),
                                    end_datetime=self.params.get('end_datetime', None),
+                                   tz=self.params.get('tz', None),
                                    binding_ver=__version__)
             creadings = CampbellReadings(cparam)
             self.resp_raw = creadings.response
-            self.resp_parsed = creadings.parsed_resp
+            self.resp_transformed = creadings.transformed_resp
             self.resp_debug = creadings.debug_info
             return self
 
