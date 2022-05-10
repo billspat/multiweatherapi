@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import json
+import pytz
 from requests import Session, Request
 
 
@@ -34,7 +35,7 @@ class OnsetParam:
         Python binding version
     """
     def __init__(self, sn=None, client_id=None, client_secret=None, ret_form=None, user_id=None, start_datetime=None,
-                 end_datetime=None, json_file=None, binding_ver=None):
+                 end_datetime=None, tz=None, json_file=None, binding_ver=None):
         self.sn = sn
         self.client_id = client_id
         self.client_secret = client_secret
@@ -46,6 +47,8 @@ class OnsetParam:
         self.start_datetime = start_datetime
         self.end_datetime_org = end_datetime
         self.end_datetime = end_datetime
+        self.cur_datetime = datetime.now(timezone.utc)
+        self.tz = tz
         self.conversion_msg = ''
         self.json_file = json_file
         self.binding_ver = binding_ver
@@ -71,14 +74,50 @@ class OnsetParam:
             raise Exception('userId must be specified and only str type is supported')
         self.path_param = {'format': self.ret_form, 'userId': self.user_id}
 
+    def __utc_to_local(self):
+        tzlist = {
+            'HT': 'US/Hawaii',
+            'AT': 'US/Alaska',
+            'PT': 'US/Pacific',
+            'MT': 'US/Mountain',
+            'CT': 'US/Central',
+            'ET': 'US/Eastern'
+        }
+        print('UTC Start date: {}'.format(self.start_datetime))
+        self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_datetime) + " \\ "
+        self.conversion_msg += 'Onset utilizes UTC timestamp as is, just added explicit UTC timezone' + " \\ "
+        # self.start_datetime = self.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None) \
+        #     if self.start_datetime else None
+        self.start_datetime = self.start_datetime.replace(tzinfo=timezone.utc) if self.start_datetime else None
+        print('Explicit UTC time Start date: {}'.format(self.start_datetime))
+        self.conversion_msg += 'Explicit UTC time start date after conversion: {}'.format(self.start_datetime) + " \\ "
+
+        print('UTC End date: {}'.format(self.end_datetime))
+        self.conversion_msg += 'UTC end date passed as parameter: {}'.format(self.end_datetime) + " \\ "
+        # self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        # if self.end_datetime else None
+        self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc) if self.end_datetime else None
+        self.conversion_msg += 'Explicit UTC time end date after conversion: {}'.format(self.end_datetime) + " \\ "
+        print('Explicit UTC time End date: {}'.format(self.end_datetime))
+        # for the metadata
+        self.start_datetime_org = \
+            self.start_datetime_org.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+        self.end_datetime_org = \
+            self.end_datetime_org.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+        self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+
     def __format_time(self):
+        self.__utc_to_local()
         # self.start_datetime = self.start_datetime.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         # if self.start_datetime \
         self.start_datetime = self.start_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.start_datetime \
             else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         self.end_datetime = self.end_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.end_datetime \
             else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
-        self.conversion_msg += 'Onset API utilize UTC timestamp as is thus does not require conversion'
+        # for metadata
+        self.start_datetime_org = self.start_datetime_org.strftime('%Y-%m-%d %H:%M:%S')
+        self.end_datetime_org = self.end_datetime_org.strftime('%Y-%m-%d %H:%M:%S')
+        self.cur_datetime = self.cur_datetime.strftime('%Y-%m-%d %H:%M:%S')
 
     def __get_auth(self):
         print('client_id: \"{}\"'.format(self.client_id))
@@ -132,6 +171,8 @@ class OnsetReadings:
             'start_datetime': param.start_datetime,
             'end_datetime_org': param.end_datetime_org,
             'end_datetime': param.end_datetime,
+            'cur_datetime': param.cur_datetime,
+            'tz': param.tz,
             'conversion_msg': param.conversion_msg,
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
@@ -209,6 +250,17 @@ class OnsetReadings:
         """
         Sends a token request to the Onset API and stores the response.
         """
+        # prep response list
+        self.response = list()
+        metadata = {
+            "vendor": "onset",
+            "station_id": self.debug_info['sn'],
+            "timezone": self.debug_info['tz'],
+            "start_datetime": self.debug_info['start_datetime_org'],
+            "end_datetime": self.debug_info['end_datetime_org'],
+            "request_time": self.debug_info['cur_datetime'],
+            "python_binding_version": self.debug_info['binding_ver']}
+        self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
         if resp.status_code != 200:
@@ -217,9 +269,8 @@ class OnsetReadings:
         elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
             raise Exception(
                 'Error: Device serial number entered does not exist')
-        self.response = resp.json()
+        self.response.append(resp.json())
         self.debug_info['response'] = self.response
-        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
     def __parse(self):
