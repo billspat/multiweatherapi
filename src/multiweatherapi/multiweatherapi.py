@@ -81,10 +81,12 @@ class ApiWrapper:
                                 user_id=self.params.get('user_id', None),
                                 start_datetime=self.params.get('start_datetime', None),
                                 end_datetime=self.params.get('end_datetime', None),
+                                tz=self.params.get('tz', None),
+                                sensor_sn=self.params.get('sensor_sn', None),
                                 binding_ver=__version__)
             oreadings = OnsetReadings(oparam)
             self.resp_raw = oreadings.response
-            self.resp_parsed = oreadings.parsed_resp
+            self.resp_transformed = oreadings.transformed_resp
             self.resp_debug = oreadings.debug_info
             return self
         elif self.vendor == 'rainwise':
