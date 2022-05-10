@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import json
+import pytz
 from requests import Session, Request
 
 
@@ -37,12 +38,12 @@ class CampbellParam:
     conversion_msg : str
         Stores time conversion message
     json_file : str, optional
-        The path to a local json file to parse
+        The path to a local json file to transform
     binding_ver : str
         Python binding version
     """
-    def __init__(self, username=None, user_passwd=None, station_id=None,
-                 station_lid=None, start_datetime=None, end_datetime=None, json_file=None, binding_ver=None):
+    def __init__(self, username=None, user_passwd=None, station_id=None, station_lid=None,
+                 start_datetime=None, end_datetime=None, tz=None, json_file=None, binding_ver=None):
 
         self.username = username
         self.user_passwd = user_passwd
@@ -58,6 +59,8 @@ class CampbellParam:
         self.start_datetime = start_datetime
         self.end_datetime_org = end_datetime
         self.end_datetime = end_datetime
+        self.cur_datetime = datetime.now(timezone.utc)
+        self.tz = tz
         self.conversion_msg = ''
         self.json_file = json_file
         self.binding_ver = binding_ver
@@ -87,6 +90,14 @@ class CampbellParam:
         print("user credentials: {} type - {}".format(type(self.credentials), self.credentials))
 
     def __utc_to_local(self):
+        tzlist = {
+            'HT': 'US/Hawaii',
+            'AT': 'US/Alaska',
+            'PT': 'US/Pacific',
+            'MT': 'US/Mountain',
+            'CT': 'US/Central',
+            'ET': 'US/Eastern'
+        }
         print('UTC Start date: {}'.format(self.start_datetime))
         self.conversion_msg += 'UTC start date passed as parameter: {}'.format(self.start_datetime) + " \\ "
         self.conversion_msg += 'Campbell utilizes Unix Epoch, just added explicit UTC timezone' + " \\ "
@@ -103,6 +114,12 @@ class CampbellParam:
         self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc) if self.end_datetime else None
         self.conversion_msg += 'Explicit UTC time end date after conversion: {}'.format(self.end_datetime) + " \\ "
         print('Explicit UTC time End date: {}'.format(self.end_datetime))
+        # for the metadata
+        self.start_datetime_org = \
+            self.start_datetime_org.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+        self.end_datetime_org = \
+            self.end_datetime_org.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+        self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
     def __format_time(self):
         self.__utc_to_local()
@@ -110,6 +127,10 @@ class CampbellParam:
             else int(datetime.now().timestamp()*1000)
         self.end_datetime = int(self.end_datetime.timestamp()*1000) if self.end_datetime \
             else int(datetime.now().timestamp()*1000)
+        # for metadata
+        self.start_datetime_org = self.start_datetime_org.strftime('%Y-%m-%d %H:%M:%S')
+        self.end_datetime_org = self.end_datetime_org.strftime('%Y-%m-%d %H:%M:%S')
+        self.cur_datetime = self.cur_datetime.strftime('%Y-%m-%d %H:%M:%S')
 
     def __get_auth(self):
         print('username: \"{}\"'.format(self.username))
@@ -177,8 +198,8 @@ class CampbellReadings:
         a Request object defining the request made to the Campbell server
     response : Response
         a json response from the Campbell server
-    parsed_resp : list of dict
-        a parsed response from
+    transformed_resp : list of dict
+        a transformed response from raw JSON file or raw JSON response
     debug_info : dict
         a dict structure consist of parameter name and values
     """
@@ -197,6 +218,8 @@ class CampbellReadings:
             'start_datetime': param.start_datetime,
             'end_datetime_org': param.end_datetime_org,
             'end_datetime': param.end_datetime,
+            'cur_datetime': param.cur_datetime,
+            'tz': param.tz,
             'conversion_msg': param.conversion_msg,
             'measurements': param.measurements,
             'access_token': param.access_token,
@@ -205,7 +228,7 @@ class CampbellReadings:
         }
         if param.json_file:
             self.response = json.load(open(param.json_file))
-            self.__parse()
+            self.__transform()
         elif param.station_lid and param.access_token:
             self.__get(param.station_lid, param.start_datetime, param.end_datetime, param.measurements,
                        param.access_token)
@@ -215,7 +238,7 @@ class CampbellReadings:
             # build an empty CampbellToken
             self.request = None
             self.response = None
-            self.parsed_resp = None
+            self.transformed_resp = None
             # self.device_info = None
             # self.measurement_settings = None
             # self.time_settings = None
@@ -241,7 +264,7 @@ class CampbellReadings:
         """
         self.__build(station_lid, epoch_start, epoch_end, measurements, access_token)
         self.__make_request()
-        self.__parse()
+        self.__transform()
         return self
 
     def __build(self, station_lid, epoch_start, epoch_end, measurements, access_token):
@@ -280,6 +303,17 @@ class CampbellReadings:
         """
         Sends a token request to the Campbell API and stores the response.
         """
+        # prep response list
+        self.response = list()
+        metadata = {
+            "vendor": "campbell",
+            "station_id": self.debug_info['station_lid'],
+            "timezone": self.debug_info['tz'],
+            "start_datetime": self.debug_info['start_datetime_org'],
+            "end_datetime": self.debug_info['end_datetime_org'],
+            "request_time": self.debug_info['cur_datetime'],
+            "python_binding_version": self.debug_info['binding_ver']}
+        self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
         if resp.status_code != 200:
@@ -288,20 +322,20 @@ class CampbellReadings:
         elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
             raise Exception(
                 'Error: Device serial number entered does not exist')
-        self.response = resp.json()
+        self.response.append(resp.json())
         self.debug_info['response'] = self.response
-        self.response['python_binding_version'] = self.debug_info['binding_ver']
         return self
 
-    def __parse(self):
+    def __transform(self):
         """
-        Parses the response.
+        Transform the response.
         """
-        self.parsed_resp = []
+        self.transformed_resp = list()
         # try:
         #     self.device_info = self.response['device']['device_info']
         # except KeyError:
         #     self.device_info = 'N/A'
         # self.timeseries = list(
         #     map(lambda x: CampbellTimeseriesRecord(x), self.response['device']['timeseries']))
+        print(self.transformed_resp)
         return self
