@@ -259,8 +259,8 @@ class ZentraReadings:
                 temp_dic = {
                     "station_id": station_id,
                     "request_datetime": request_datetime,
-                    "data_datetime_"+str(jdx): temp_readings[jdx]['datetime'][:-6],
-                    "temp_"+str(jdx): temp_readings[jdx]['value']
+                    "data_datetime": temp_readings[jdx]['datetime'][:-6],
+                    "atemp": temp_readings[jdx]['value']
                 }
                 self.transformed_resp.append(temp_dic)
         print(self.transformed_resp)
