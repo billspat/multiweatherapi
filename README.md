@@ -1,6 +1,6 @@
 # Multi Weather API
 
-Consistent Python bindings for select commercial weather station APIs, such as [Zentra Cloud](https://zentracloud.com/) REST API v3, created for MSU EnviroWeather Project.
+Consistent Python bindings for select commercial weather station APIs, such as [Zentra Cloud](https://zentracloud.com/) REST API v3, created for [MSU EnviroWeather Project](https://michiganstate.sharepoint.com/sites/MSUITADSDataScience/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2FMSUITADSDataScience%2FShared%20Documents%2FClients%2FEnviroWeather&viewid=554d191e%2Def24%2D4e36%2Dbc88%2D12660f0e0f8d).
 
 ### Background
 
