@@ -255,12 +255,14 @@ class ZentraReadings:
         request_datetime = self.response[0]['request_time']
         for idx in range(1, len(self.response)):
             temp_readings = self.response[idx]['data']['Air Temperature'][0]["readings"]
+            prec_readings = self.response[idx]['data']['Precipitation'][0]["readings"]
             for jdx in range(len(temp_readings)):
                 temp_dic = {
                     "station_id": station_id,
                     "request_datetime": request_datetime,
                     "data_datetime": temp_readings[jdx]['datetime'][:-6],
-                    "atemp": temp_readings[jdx]['value']
+                    "atemp": temp_readings[jdx]['value'],
+                    "pcpn": prec_readings[jdx]['value']
                 }
                 self.transformed_resp.append(temp_dic)
         print(self.transformed_resp)
