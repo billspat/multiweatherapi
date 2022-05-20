@@ -285,6 +285,8 @@ class SpectrumReadings:
                     if sensor_data[kdx]['SensorType'] == 'Temperature':
                         temp_dict['data_datetime'] = sensor_data[kdx]['FormattedTimeStamp']
                         temp_dict['atemp'] = sensor_data[kdx]['Value']
+                    if sensor_data[kdx]['SensorType'] == 'Rainfall':
+                        temp_dict['pcpn'] = sensor_data[kdx]['Value']
                 self.transformed_resp.append(temp_dict)
         print(self.transformed_resp)
         return self
