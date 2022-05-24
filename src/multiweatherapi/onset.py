@@ -281,6 +281,31 @@ class OnsetReadings:
         """
         Parses the response.
         """
+        def search_timestamp(input_datetime):
+            if self.transformed_resp is None:
+                return None
+            if len(self.transformed_resp) == 0:
+                return -1
+            for x in range(len(self.transformed_resp)):
+                if input_datetime == self.transformed_resp[x]['data_datetime']:
+                    return x
+            return -1
+
+        def insert_resp(key, value, rec_datetime):
+            resp_index = search_timestamp(rec_datetime)
+            if resp_index is None:
+                raise Exception("transformed_resp is None")
+            elif resp_index == -1:
+                temp_dict = {
+                    "station_id": station_id,
+                    "request_datetime": request_datetime,
+                    "data_datetime": data_datetime,
+                    key: value
+                }
+                self.transformed_resp.append(temp_dict)
+            else:
+                self.transformed_resp[resp_index][key] = value
+
         self.transformed_resp = list()
         station_id = self.response[0]['station_id']
         request_datetime = self.response[0]['request_time']
@@ -288,12 +313,14 @@ class OnsetReadings:
             observe_list = self.response[idx]['observation_list']
             for kdx in range(len(observe_list)):
                 if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
-                    temp_dic = {
-                        "station_id": station_id,
-                        "request_datetime": request_datetime,
-                        "data_datetime": observe_list[kdx]['timestamp'],
-                        "atemp": observe_list[kdx]['si_value']
-                    }
-                    self.transformed_resp.append(temp_dic)
+                    data_datetime = observe_list[kdx]['timestamp']
+                    atemp = observe_list[kdx]['si_value']
+                    insert_resp("atemp", atemp, data_datetime)
+
+                if self.debug_info['sensor_sn']['pcpn'] == observe_list[kdx]['sensor_sn']:
+                    data_datetime = observe_list[kdx]['timestamp']
+                    pcpn = observe_list[kdx]['us_value']
+                    insert_resp("pcpn", pcpn, data_datetime)
+
         print(self.transformed_resp)
         return self
