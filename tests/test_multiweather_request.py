@@ -49,9 +49,6 @@ def params(vendor, recent_datetimes):
 @pytest.fixture
 def api_request(vendor, params, scope="session"):
     """ get one request to re-use for multiple tests"""
-    # If the vendor is Zentra, then sleep for 60 seconds.  This is because Zentra only allows one call every 60 seconds.
-    if vendor == 'ZENTRA':
-        time.sleep(60)
 
     readings = multiweatherapi.get_reading(vendor, **params)
     yield readings
@@ -77,9 +74,6 @@ def test_api_return_some_content(vendor, params): # , expected_data_keys
     assert readings.resp_raw is not None, 'multiweatherapi did not return any raw readings...'
 
 def test_api_transform_stubbed(vendor, params):
-    if vendor == 'ZENTRA':
-        print('###############################')
-        time.sleep(60)
     readings = multiweatherapi.get_reading(vendor, **params)
     assert readings.resp_transformed is not None, 'multiweatherapi did not return any parsed readings...'
 
