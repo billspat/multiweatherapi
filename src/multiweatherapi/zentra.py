@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
 import json
+from time import sleep
+
 import pytz
 from requests import Session, Request
 
@@ -235,7 +237,13 @@ class ZentraReadings:
             "python_binding_version": self.debug_info['binding_ver']}
         self.response.append(metadata)
         # Send the request and get the JSON response
-        resp = Session().send(self.request)
+        while True:
+            resp = Session().send(self.request)
+            if resp.status_code != 429:
+                break
+            print("message: {}".format(resp.text))
+            sleep(60)
+
         if resp.status_code != 200:
             raise Exception(
                 'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
@@ -256,6 +264,8 @@ class ZentraReadings:
         for idx in range(1, len(self.response)):
             temp_readings = self.response[idx]['data']['Air Temperature'][0]["readings"]
             prec_readings = self.response[idx]['data']['Precipitation'][0]["readings"]
+            print("temp_readings len: ", len(temp_readings))
+            print("prec_readings len: ", len(prec_readings))
             for jdx in range(len(temp_readings)):
                 temp_dic = {
                     "station_id": station_id,
@@ -265,5 +275,5 @@ class ZentraReadings:
                     "pcpn": prec_readings[jdx]['value']
                 }
                 self.transformed_resp.append(temp_dic)
-        print(self.transformed_resp)
+        # print(self.transformed_resp)
         return self
