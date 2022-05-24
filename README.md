@@ -66,3 +66,16 @@ To be determined
 ### License
 
 Released under the MIT License
+
+### Testing the package
+
+If you want to test without installing via PIP, there is a script
+`get_sample_data.py`  in the main directory which requires a configuration file named '.env' in the root folder. 
+
+```
+pip install -r requirements.txt
+get_sample_data.py RAINWISE
+```
+
+see also [docs/Test Suite Doco.py](docs/Test%20Suite%20Doco.md) for more formal tests and how to provide station configuration file
+

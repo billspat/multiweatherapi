@@ -4,6 +4,8 @@ __pycache__/
 *$py.class
 .Python
 
+.pytest_cache
+
 # config
 .env
 env.bak/
