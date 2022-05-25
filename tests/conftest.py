@@ -22,8 +22,7 @@ def pytest_generate_tests(metafunc):
     # if the argument is specified in the list of test "fixturenames".
 
     vendor_option = metafunc.config.getoption("vendor") 
-    all_vendors = ['DAVIS', 'CAMPBELL', 'ONSET', 'RAINWISE', 'SPECTRUM', 'ZENTRA'] 
-    #   NOTE zentra is removed because can only check once per 60s.   
+    all_vendors = ['DAVIS', 'CAMPBELL', 'ONSET', 'RAINWISE', 'SPECTRUM', 'ZENTRA']  
 
     # for those tests that require a vendor... check for param and also for config
     if "vendor" in metafunc.fixturenames:

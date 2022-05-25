@@ -7,22 +7,19 @@ import time
 
 # for vendor fixture and dotenv, see conftest.py  
 
+def get_items(dictionary):
+    for key, value in dictionary.items():
+        if type(value) is dict:
+            yield (key, value)
+            yield from get_items(value)
+        else:
+            yield (key, value)
+
 @pytest.fixture
-def expected_data_keys(vendor):
-    """list of expected keys in raw response data.  For Campbell some rand selected keys"""
+def expected_vendor_parms(vendor):
+    """This will provide a list of parms that a vendor should have in their test package.  Retrieved from the .env file."""
 
-    # TODO : add expected fields names from json output from each vendor.   
-    # better to save this as config rather than hard-code expected outputs in test code
-    vendor_keys = {
-        'CAMPBELL' :  ['airtemp_c_avg_table5','dewpointtemp_c_avg_table5','windspd_ms_3m_avg_table5','relhum_avg_table5','rain_mm_tot_table5'],
-        'DAVIS'    : [], 
-        'ONSET'    : [],
-        'RAINWISE' : [],
-        'SPECTRUM' : [],
-        'ZENTRA'   : []
-    }
-
-    yield vendor_keys[vendor.upper()]
+    yield os.environ[vendor.upper() + '_PARMS']
 
 
 @pytest.fixture
@@ -53,9 +50,25 @@ def api_request(vendor, params, scope="session"):
     readings = multiweatherapi.get_reading(vendor, **params)
     yield readings
 
+def test_vendor_params(vendor, params, expected_vendor_parms):
+    # Put expected keys into a list
+    expected = expected_vendor_parms.split(',')
+
+    # Get the actual keys from the parms and put them into a list
+    actual = []
+    for key, value in get_items(params):
+        actual.append(key)
+    
+    missing = []
+    for parm in expected:
+        if not parm in actual:
+            missing.append(parm) 
+
+    assert len(missing) == 0, 'The following parms are missing for the vendor ' + vendor + ': ' + ', '.join(missing)
 
 
-def test_api_return_some_content(api_request): # , expected_data_keys
+
+def test_api_return_some_content(api_request): 
     """ test that we don't get nothing, and it has keys as expected """
     multiweatherapi_params['start_date'], multiweatherapi_params['end_date'] = recent_datetimes
 
@@ -65,7 +78,7 @@ def test_api_return_some_content(api_request): # , expected_data_keys
 
 
 ######## test for connection and content
-def test_api_return_some_content(vendor, params): # , expected_data_keys
+def test_api_return_some_content(vendor, params): 
     """ test that we don't get nothing, and it has keys as expected """
     # multiweatherapi_params['start_date'], multiweatherapi_params['end_date'] = recent_datetimes
     readings = multiweatherapi.get_reading(vendor, **params)
@@ -78,7 +91,7 @@ def test_api_transform_stubbed(vendor, params):
     assert readings.resp_transformed is not None, 'multiweatherapi did not return any parsed readings...'
 
 
-def test_api_return_valid_content(api_request): # , expected_data_keys
+def test_api_return_valid_content(api_request): 
     resp = api_request.resp_raw
     assert type(resp) ==  type([]), "response is not array type"
 
@@ -201,16 +214,3 @@ def test_start_date_after_end_date_raises_exception(params):
 
     with pytest.raises(Exception) as error:
         multiweatherapi.get_reading(vendor, **params)    
-
-
-
-
-    # data_keys = resp.keys()
-    # for k in expected_data_keys:
-    #     assert k  in data_keys, f"data element {k} not in respnse data"
-    
-    # atemp = resp['airtemp_c_avg_table5'][0][1]
-    # assert atemp > -50.0
-    # assert atemp < 120.0
-
-
