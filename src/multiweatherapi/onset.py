@@ -322,5 +322,10 @@ class OnsetReadings:
                     pcpn = observe_list[kdx]['us_value']
                     insert_resp("pcpn", pcpn, data_datetime)
 
+                if self.debug_info['sensor_sn']['relh'] == observe_list[kdx]['sensor_sn']:
+                    data_datetime = observe_list[kdx]['timestamp']
+                    relh = observe_list[kdx]['us_value']
+                    insert_resp("relh", relh, data_datetime)
+
         print(self.transformed_resp)
         return self
