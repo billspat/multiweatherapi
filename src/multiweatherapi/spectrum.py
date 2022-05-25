@@ -287,6 +287,8 @@ class SpectrumReadings:
                         temp_dict['atemp'] = sensor_data[kdx]['Value']
                     if sensor_data[kdx]['SensorType'] == 'Rainfall':
                         temp_dict['pcpn'] = sensor_data[kdx]['Value']
+                    if sensor_data[kdx]['SensorType'] == 'Relative Humidity':
+                        temp_dict['relh'] = sensor_data[kdx]['Value']
                 self.transformed_resp.append(temp_dict)
         print(self.transformed_resp)
         return self
