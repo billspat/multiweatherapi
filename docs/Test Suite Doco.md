@@ -38,6 +38,18 @@ DAVIS={"sn":"99999","apikey":"abcdefgetc","apisec":"x1y2z3etc"}
 
 If a vendor is not present in the configuration file, it will not test for that vendor so that there are not failures for which you don't have configuration. 
 
+After the configuration section will be a section that holds a list of expected configuration values.  This will allow the test suite to check the configuration values it receives form the .env file for any values that might be missing as those could cause subsequent tests to fail.  
+
+Sample:
+```
+CAMPBELL_PARMS = "station_id,station_lid,username,user_passwd,tz"
+DAVIS_PARMS = "sn,apikey,apisec,tz"
+ONSET_PARMS = "sn,client_id,client_secret,ret_form,user_id,tz,sensor_sn,atemp,pcpn,relh"
+RAINWISE_PARMS = "sn,sid,pid,ret_form,mac,username,tz"
+SPECTRUM_PARMS = "sn,apikey,tz"
+ZENTRA_PARMS = "sn,token,tz"
+```
+
 See https://pypi.org/project/python-dotenv/ for more information on using `.env` files
 
 Each vendor entry is different, and follows documentation for each type in the `/docs` folder of this repository.    
