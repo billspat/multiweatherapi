@@ -285,7 +285,8 @@ class RainwiseReadings:
                     "request_datetime": request_datetime,
                     "data_datetime": v,
                     "atemp": self.response[idx]['temp'][k],
-                    "pcpn": self.response[idx]['precip'][k]
+                    "pcpn": self.response[idx]['precip'][k],
+                    "relh": self.response[idx]['hum'][k]
                 }
                 self.transformed_resp.append(temp_dic)
         print(self.transformed_resp)

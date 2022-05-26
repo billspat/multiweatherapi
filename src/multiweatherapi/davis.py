@@ -338,7 +338,8 @@ class DavisReadings:
                             "request_datetime": request_datetime,
                             "data_datetime": epoch_converter(data[kdx]['ts'], self.response[0]['timezone']),
                             "atemp": data[kdx]['temp_out'],
-                            "pcpn": data[kdx]['rainfall_in']
+                            "pcpn": data[kdx]['rainfall_in'],
+                            "relh": data[kdx]['hum_out']
                         }
                         self.transformed_resp.append(temp_dic)
         print(self.transformed_resp)
