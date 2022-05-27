@@ -284,7 +284,8 @@ class SpectrumReadings:
                 for kdx in range(len(sensor_data)):
                     if sensor_data[kdx]['SensorType'] == 'Temperature':
                         temp_dict['data_datetime'] = sensor_data[kdx]['FormattedTimeStamp']
-                        temp_dict['atemp'] = sensor_data[kdx]['Value']
+                        temp_dict['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 1)
+                        # print(temp_dict['atemp'])
                     if sensor_data[kdx]['SensorType'] == 'Rainfall':
                         temp_dict['pcpn'] = sensor_data[kdx]['Value']
                     if sensor_data[kdx]['SensorType'] == 'Relative Humidity':

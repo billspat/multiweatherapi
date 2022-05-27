@@ -314,7 +314,7 @@ class OnsetReadings:
             for kdx in range(len(observe_list)):
                 if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
                     data_datetime = observe_list[kdx]['timestamp']
-                    atemp = observe_list[kdx]['si_value']
+                    atemp = round(float(observe_list[kdx]['si_value']), 1)
                     insert_resp("atemp", atemp, data_datetime)
 
                 if self.debug_info['sensor_sn']['pcpn'] == observe_list[kdx]['sensor_sn']:
