@@ -284,7 +284,7 @@ class RainwiseReadings:
                     "station_id": station_id,
                     "request_datetime": request_datetime,
                     "data_datetime": v,
-                    "atemp": self.response[idx]['temp'][k],
+                    "atemp": round(((float(self.response[idx]['temp'][k]) - 32) * 5 / 9), 1),
                     "pcpn": self.response[idx]['precip'][k],
                     "relh": self.response[idx]['hum'][k]
                 }
