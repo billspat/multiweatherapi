@@ -287,7 +287,7 @@ class SpectrumReadings:
                         temp_dict['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 1)
                         # print(temp_dict['atemp'])
                     if sensor_data[kdx]['SensorType'] == 'Rainfall':
-                        temp_dict['pcpn'] = sensor_data[kdx]['Value']
+                        temp_dict['pcpn'] = (float(sensor_data[kdx]['Value'])*25.4)
                     if sensor_data[kdx]['SensorType'] == 'Relative Humidity':
                         temp_dict['relh'] = sensor_data[kdx]['Value']
                 self.transformed_resp.append(temp_dict)
