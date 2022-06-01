@@ -77,7 +77,7 @@ class DavisParam:
             if self.end_datetime - timedelta(hours=24) <= self.start_datetime:
                 self.date_tuple_list.append((self.start_datetime, self.end_datetime))
             else:
-                while self.end_datetime - timedelta(hours=24) >= self.start_datetime:
+                while self.end_datetime - timedelta(hours=24) > self.start_datetime:
                     self.date_tuple_list.append(
                         (self.start_datetime, self.start_datetime + timedelta(hours=23, minutes=59, seconds=59)))
                     self.start_datetime += timedelta(hours=24)
