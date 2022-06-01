@@ -71,7 +71,10 @@ class DavisParam:
             raise Exception('"sn" parameter must be included.')
 
         if self.start_datetime and self.end_datetime:
-            if self.end_datetime - timedelta(hours=24) < self.start_datetime:
+            # remove sub-second since API cannot distinguish them different
+            self.start_datetime = self.start_datetime.replace(microsecond=0)
+            self.end_datetime = self.end_datetime.replace(microsecond=0)
+            if self.end_datetime - timedelta(hours=24) <= self.start_datetime:
                 self.date_tuple_list.append((self.start_datetime, self.end_datetime))
             else:
                 while self.end_datetime - timedelta(hours=24) >= self.start_datetime:
