@@ -61,7 +61,63 @@ Currently following time zones are supported:
 
 ### Outputs
 
-To be determined
+- API Response (JSON)
+
+  The (raw) API response is formatted in JSON and 0th element illustrates the metadata of the API call and 1st (and onward - Davis stations) element(s) depicts weather station measurements retrieved from the API call.
+
+  ```json
+  [
+    {
+      "vendor": "spectrum",
+      "station_id": "50400123",
+      "start_datetime": "2022-05-26 12:08:07",
+      "end_datetime": "2022-05-26 13:08:07",
+      "timezone": "ET",
+      "request_time": "2022-05-27 12:08:07",
+      "python_binding_version": "0.0.17"
+    },
+    {
+      "EquipmentRecords": [
+        {
+          "SerialNumber": "50400123",
+          "TimeStamp": "2022-05-26T16:10:00",
+          "SensorData": [
+            {
+              "ChannelNumber": 0,
+              "PortNumber": "A",
+              "SensorNumber": 0,
+              "SensorType": "Rainfall",
+              "TimeStamp": "2022-05-26T16:10:00",
+              "FormattedTimeStamp": "2022-05-26 16:10",
+              "Value": "0.00",
+              "AccumlatedValue": "0.00",
+              "DecimalValue": 0.0,
+              "AccumlatedDecimalValue": 0.0,
+              "Units": "inches",
+              "ValueType": "Average"
+            },
+            ...
+    }
+  ]
+  ```
+
+- Transformed Response (List of Dict)
+
+  The transformed response is formatted in `list` (array) of Python `dict` object. Each `dict` object consists of that measurements that stakeholders are interested in and the metadata that would be used to facilitate data loading into the backend.
+
+  ```json
+  [
+    {
+      "station_id": "50400123",
+      "request_datetime": "2022-05-27 12:08:07",
+      "pcpn": 0.0,
+      "data_datetime": "2022-05-26 16:10",
+      "atemp": 21.0,
+      "relh": "92.3"
+    },
+    ...
+  ]
+  ```
 
 ### License
 
