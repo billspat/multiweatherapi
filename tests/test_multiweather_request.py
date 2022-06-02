@@ -66,16 +66,12 @@ def test_vendor_params(vendor, params, expected_vendor_parms):
 
     assert len(missing) == 0, 'The following parms are missing for the vendor ' + vendor + ': ' + ', '.join(missing)
 
-
-
 def test_api_return_some_content(api_request): 
     """ test that we don't get nothing, and it has keys as expected """
     multiweatherapi_params['start_date'], multiweatherapi_params['end_date'] = recent_datetimes
 
     assert api_request is not None, "could not get readings at all"
     assert api_request.resp_raw is not None, 'multiweatherapi did not return any raw readings...'
-
-
 
 ######## test for connection and content
 def test_api_return_some_content(vendor, params): 
@@ -90,11 +86,30 @@ def test_api_transform_stubbed(vendor, params):
     readings = multiweatherapi.get_reading(vendor, **params)
     assert readings.resp_transformed is not None, 'multiweatherapi did not return any parsed readings...'
 
-
 def test_api_return_valid_content(api_request): 
     resp = api_request.resp_raw
     assert type(resp) ==  type([]), "response is not array type"
 
+# The following tests are for Davis only because:
+#    - Davis can only return up to 24 hours worth of data at a time.
+#    - There was an error encountered when the start and end times were exactly 24 hours apart.
+# The purpose of these tests are to make sure any changes to the multiweatherapi library doesn't break the code that
+# alleviates these problems.
+def test_Davis_exactly_24_Hours(vendor, params):
+    if vendor == 'DAVIS':
+        params['end_datetime'] = datetime.now(timezone.utc).replace(microsecond=0)
+        params['start_datetime'] = params['end_datetime'] - timedelta(seconds = 86400)
+        readings = multiweatherapi.get_reading(vendor, **params)
+        assert readings is not None, "Could not get readings at all"
+        assert readings.resp_raw is not None, 'Multiweatherapi did not return any raw readings...'         
+
+def test_Davis_More_than_24_hours(vendor, params):
+    if vendor == 'DAVIS':   
+        params['end_datetime'] = datetime.now(timezone.utc).replace(microsecond=0)
+        params['start_datetime'] = params['end_datetime'] - timedelta(days = 2)
+        readings = multiweatherapi.get_reading(vendor, **params)
+        assert readings is not None, "Could not get readings at all"
+        assert readings.resp_raw is not None, 'Multiweatherapi did not return any raw readings...' 
 
 
 ###### tests for bad input handling
