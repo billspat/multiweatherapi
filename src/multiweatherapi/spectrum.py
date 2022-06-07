@@ -87,29 +87,33 @@ class SpectrumParam:
         print('UTC Start date: {}, local time zone: {}'.format(self.start_datetime, self.tz))
         self.conversion_msg += \
             'UTC start date passed as parameter: {}, local time zone: {}'.format(self.start_datetime, self.tz) + " \\ "
-        # self.start_datetime=self.start_datetime.replace(tzinfo=timezone.utc).astimezone(tz=None)
-        # if self.start_datetime else None
-        self.start_datetime = \
-            self.start_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.start_datetime else None
+        self.start_datetime = None if not self.start_datetime else \
+            self.start_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+        # Spectrum API performs weird if time zone information is baked in the datetime object
+        self.start_datetime = self.start_datetime.replace(tzinfo=None) if self.start_datetime else None
         print('Local time Start date: {}'.format(self.start_datetime))
         self.conversion_msg += 'Local time start date after conversion: {}'.format(self.start_datetime) + " \\ "
 
         print('UTC End date: {}, local time zone: {}'.format(self.end_datetime, self.tz))
         self.conversion_msg += \
             'UTC end date passed as parameter: {}, local time zone: {}'.format(self.end_datetime, self.tz) + " \\ "
-        self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.end_datetime else None
+        self.end_datetime = None if not self.end_datetime else \
+            self.end_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+        # Spectrum API performs weird if time zone information is baked in the datetime object
+        self.end_datetime = self.end_datetime.replace(tzinfo=None) if self.end_datetime else None
         self.conversion_msg += 'Local time end date after conversion: {}'.format(self.end_datetime) + " \\ "
         print('Local time End date: {}'.format(self.end_datetime))
 
-        print('UTC date: {}, local time zone: {}'.format(self.date, self.tz))
-        self.conversion_msg += \
-            'UTC date passed as parameter: {}, local time zone: {}'.format(self.date, self.tz) + " \\ "
-        self.date = self.date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz])) \
-            if self.date else None
-        self.conversion_msg += 'Local time date after conversion: {}'.format(self.date) + " \\ "
-        print('Local time End date: {}'.format(self.date))
+        if self.date:
+            print('UTC date: {}, local time zone: {}'.format(self.date, self.tz))
+            self.conversion_msg += \
+                'UTC date passed as parameter: {}, local time zone: {}'.format(self.date, self.tz) + " \\ "
+            self.date = self.date.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+            # Spectrum API performs weird if time zone information is baked in the datetime object
+            self.date = self.date.replace(tzinfo=None)
+            self.conversion_msg += 'Local time date after conversion: {}'.format(self.date) + " \\ "
+            print('Local time End date: {}'.format(self.date))
+
         self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
 
