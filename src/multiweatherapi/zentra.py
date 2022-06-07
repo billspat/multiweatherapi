@@ -211,9 +211,9 @@ class ZentraReadings:
                                url='https://zentracloud.com/api/v3/get_readings',
                                headers={
                                    'Authorization': "Token " + token},
-                               params={'sn': sn,
-                                       'start_datetime': start_datetime,
-                                       'end_datetime': end_datetime,
+                               params={'device_sn': sn,
+                                       'start_date': start_datetime,
+                                       'end_date': end_datetime,
                                        'start_mrid': start_mrid,
                                        'end_mrid': end_mrid}).prepare()
         self.debug_info['http_method'] = self.request.method
@@ -266,9 +266,9 @@ class ZentraReadings:
             temp_readings = data['Air Temperature'][0]["readings"]
             prec_readings = data['Precipitation'][0]["readings"]
             relh_readings = data['Relative Humidity'][0]["readings"]
-            print("temp_readings len: ", len(temp_readings))
-            print("prec_readings len: ", len(prec_readings))
-            print("relh_readings len: ", len(relh_readings))
+            # print("temp_readings len: ", len(temp_readings))
+            # print("prec_readings len: ", len(prec_readings))
+            # print("relh_readings len: ", len(relh_readings))
             for jdx in range(len(temp_readings)):
                 temp_dic = {
                     "station_id": station_id,
