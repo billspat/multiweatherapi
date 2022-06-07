@@ -58,6 +58,8 @@ Currently following time zones are supported:
 
 - [Requests](https://docs.python-requests.org/en/latest/)
 - [pytz](https://pythonhosted.org/pytz/)
+- [pytest](https://docs.pytest.org/en/7.1.x/)
+- [python-dotenv](https://saurabh-kumar.com/python-dotenv/)
 
 ### Outputs
 
