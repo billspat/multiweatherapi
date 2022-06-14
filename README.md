@@ -130,10 +130,12 @@ Released under the MIT License
 If you want to test without installing via PIP, there is a script
 `get_sample_data.py`  in the main directory which requires a configuration file named '.env' in the root folder. 
 
+```bash
+$ pip install -r requirements.txt
+$ python get_sample_data.py rainwise /Users/jhp/Desktop/
 ```
-pip install -r requirements.txt
-get_sample_data.py RAINWISE
-```
+
+Please refer to [docs/get_sample_data.md](docs/get_sample_data.md) for detail documentation of `get_sample_data.py` 
 
 see also [docs/Test Suite Doco.py](docs/Test%20Suite%20Doco.md) for more formal tests and how to provide station configuration file
 
