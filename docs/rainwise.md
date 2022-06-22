@@ -35,6 +35,8 @@ Rainwise weather station API does not require real-time authentication process; 
    
    > NOTE: If `sdate` and `edate` are **not** set, it returns the **last 24 hours**’ worth of data from the current date and time, otherwise the data between the specified ranges is returned. The date range for data is **limited to 7 days** for an interval of **1 minute**. This limit scales with the interval so with an interval of **15 minutes**, the limit will be **105 days**.
    
+   > NOTE: Rainwise API expects local time (zone) of the station's location for its `sdate` and `edate`.
+   
    
    
 4. Addtional Endpoint information
@@ -55,7 +57,7 @@ Rainwise weather station API does not require real-time authentication process; 
 | mac            | MAC of the weather station                                   | str      | Y                            |
 | ret_form       | Returns data as XML or JSON, If omitted data is returned as XML | str      | N                            |
 | interval       | Data aggregation interval, 1,5,10,15,30 or 60min (default 1min) | int      | N                            |
-| start_datetime | Start date and time. If omitted set to current time (UTC expected) | datetime | N                            |
+| start_datetime | Start date and time. If omitted set to current time (UTC expected) | datetime | N                            |
 | end_datetime   | End date and time. If omitted set to current time (UTC expected) | datetime | N                            |
 | tz             | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | str      | N (Y if date/time is passed) |
 
@@ -66,6 +68,14 @@ Rainwise weather station API does not require real-time authentication process; 
 - Usage
 
 ```python
+local = pytz.timezone('US/Eastern')
+start_date = datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M')
+end_date = datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
+start_date_local = local.localize(start_date)
+end_date_local = local.localize(end_date)
+start_date_utc = start_date_local.astimezone(pytz.utc)
+end_date_utc = end_date_local.astimezone(pytz.utc)
+
 params = {
     'username': USERNAME,
     'sid': SID,
@@ -73,16 +83,29 @@ params = {
     'mac': STATION_MAC_ADDR,
   	'ret_form': 'json',
   	'interval': 1,
-    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M'),
+    'start_datetime': start_date_utc,
+    'end_datetime': end_date_utc,
     'tz' : 'ET'
 }
 rparams = RainwiseParam(**params)
 rreadings = RainwiseReadings(rparams)
 print(rreadings.response) # print raw JSON response
-print(rreadings.parsed_resp) # print parsed result in list of dict format
+print(rreadings.transformed_resp) # print transformed response in list of dict format
 ```
 
-### Data Matching/Parsing
+### Data Transformation
 
-TBA
+- Rainwise stations utilizes imperial system thus unit conversion is applied to transformed response:
+  - `F` (Fahrenheit) to `C` (Celsius)
+  - `in` (Inch) to `mm` (millimeter)
+- Measurement mapping
+
+| Rainwise Measurement Variable | Backend DB Variable |
+| :---------------------------: | :-----------------: |
+|             temp              |        atemp        |
+|            precip             |        pcpn         |
+|              hum              |        relh         |
+
+###  Sample Data Output
+
+Sample RAW JSON API response and the transformed response outputs may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=8X3bp3). 

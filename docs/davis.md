@@ -91,9 +91,7 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
    | station-id    | A single station ID                        | str       | Path           | Y        |
    | api-key       | API Key                                    | str       | Query          | Y        |
    | api-signature | API Signature                              | str       | Query          | Y        |
-   | t             | Unix timestamp when the query is submitted | int       | Query          | Y        |
-   
-   - Sample output [JSON File](https://michiganstate.sharepoint.com/sites/Geography-EnviroweatherTeam/_layouts/15/download.aspx?UniqueId=a80bb057384c4a6ba95f89c7f46fc160&e=cJT5Em) may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
+   | t             | Unix timestamp when the query is submitted | int       | Query          | Y        |
    
 1. Get historic data 
 
@@ -112,11 +110,9 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
    | station-id      | A single station ID                                          | str       | Path           | Y        |
    | api-key         | API Key                                                      | str       | Query          | Y        |
    | api-signature   | API Signature                                                | str       | Query          | Y        |
-   | t               | Unix timestamp when the query is submitted                   | int       | Query          | Y        |
+   | t               | Unix timestamp when the query is submitted                   | int       | Query          | Y        |
    | start-timestamp | Unix timestamp marking the beginning of the data requested. Must be earlier than end-timestamp but not more than 24 hours earlier. | int       | Query          | Y        |
    | end-timestamp   | Unix timestamp marking the end of the data requested. Must be later than start-timestamp but not more than 24 hours later. | int       | Query          | Y        |
-   
-   - Sample output [JSON File](https://michiganstate.sharepoint.com/sites/Geography-EnviroweatherTeam/_layouts/15/download.aspx?UniqueId=91c9b9303d9f453897e04104f7cca03f&e=yNpYKQ) may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
    
    > NOTE: While API does not allow timestamp range greater than 24 hours, our Python binding will automatically break-down into less than 24hr chunks, make separate API calls and then return the combined responses.   
    
@@ -128,15 +124,63 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
 
 - Required Parameters
 
-| Name           | Contents                           | Type                |
-| -------------- | ---------------------------------- | ------------------- |
-| sn             | Station ID                         | str                 |
-| apikey         | Client-specific value              | str                 |
-| apisec         | Client-specific value              | str                 |
-| start_datetime | Start date and time (UTC expected) | datetime (optional) |
-| end_datetime   | End date and time (UTC expected)   | datetime (optional) |
+| Name           | Contents                                                     | Type                |
+| -------------- | ------------------------------------------------------------ | ------------------- |
+| sn             | Station ID                                                   | str                 |
+| apikey         | Client-specific value                                        | str                 |
+| apisec         | Client-specific value                                        | str                 |
+| start_datetime | Start date and time (UTC expected)                           | datetime (optional) |
+| end_datetime   | End date and time (UTC expected)                             | datetime (optional) |
+| tz             | Time zone information of the station (options: 'HT', 'AT', 'PT', 'MT', 'CT', 'ET') | str                 |
 
 > NOTE: For date and time range to correctly work, both `start_datetime` and `end_datetime` parameters should be in UTC time zone
+
+> NOTE: HT: Hawaii Time / AT: Alaska Time / PT: Pacific Time / MT: Mountain Time / CT: Central Time / ET: Eastern Time
+
+- Usage
+
+```python
+local = pytz.timezone('US/Eastern')
+start_date = datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M')
+end_date = datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
+start_date_local = local.localize(start_date)
+end_date_local = local.localize(end_date)
+start_date_utc = start_date_local.astimezone(pytz.utc)
+end_date_utc = end_date_local.astimezone(pytz.utc)
+
+params = {
+    'sn': STATION_ID,
+    'apikey': API_KEY,
+    'apisec': API_SECURITY,
+    'start_datetime': start_date_utc,
+    'end_datetime': end_date_utc,
+    'tz': 'ET'
+}
+dparams = DavisParam(**params)
+dreadings = DavisReadings(dparams)
+print(dreadings.response) # print raw JSON response
+print(dreadings.transformed_resp) # print transformed response in list of dict format
+```
+
+### Data Transformation
+
+-  Precipitation is recorded both in `inch` as well as `millimeter`; thus, no transformation is needed 
+-  Temperature is recorded in imperial system only; thus unit conversion is applied to transformed response:
+   -  `F` (Fahrenheit) to `C` (Celsius)
+
+-  Measurement mapping
+
+| Davis Measurement Variable | Backend DB Variable |
+| :------------------------: | :-----------------: |
+|          temp_out          |        atemp        |
+|        rainfall_mm         |        pcpn         |
+|          hum_out           |        relh         |
+
+### Sample Data Output
+
+Sample RAW JSON API response and the transformed response outputs may be viewed from the project [SharePoint Folder](https://michiganstate.sharepoint.com/:f:/r/sites/Geography-EnviroweatherTeam/Shared%20Documents/Data%20on%20Demand/ADS%20ENVWX%20API%20Project/Vendor%20API%20and%20station%20info/Sample%20Weather%20Data%20Output?csf=1&web=1&e=55ky0M).
+
+### Special Consideration
 
 - 24hr+ Data Polling
 
@@ -150,23 +194,3 @@ Davis (WeatherLink) weather station API requires an ***API Key***, an ***API Sec
      - [ (st_date1, ed_date1, apisig1), (st_date2, ed_date2, apisig2), ... ]
   4. `DavisReading` class takes the `DavisParam` class and builds Request object for each `start_datetime`, `end_datetime` and `API_signature` tuple
   5. API call is made ***sequentially***, and each JSON response is serialized and appended to a list
-
-- Usage
-
-```python
-params = {
-    'sn': STATION_ID,
-    'apikey': API_KEY,
-    'apisec': API_SECURITY,
-    'start_datetime': datetime.strptime('11-19-2021 14:00', '%m-%d-%Y %H:%M'),
-    'end_datetime': datetime.strptime('11-19-2021 16:00', '%m-%d-%Y %H:%M')
-}
-dparams = DavisParam(**params)
-dreadings = DavisReadings(dparams)
-print(dreadings.response) # print raw JSON response
-print(dreadings.parsed_resp) # print parsed result in list of dict format
-```
-
-### Data Matching/Parsing
-
-TBA
