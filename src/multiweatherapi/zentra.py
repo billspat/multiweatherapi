@@ -262,13 +262,23 @@ class ZentraReadings:
         station_id = self.response[0]['station_id']
         request_datetime = self.response[0]['request_time']
         for idx in range(1, len(self.response)):
-            data = self.response[idx]['data']
-            temp_readings = data['Air Temperature'][0]["readings"]
-            prec_readings = data['Precipitation'][0]["readings"]
-            relh_readings = data['Relative Humidity'][0]["readings"]
-            # print("temp_readings len: ", len(temp_readings))
-            # print("prec_readings len: ", len(prec_readings))
-            # print("relh_readings len: ", len(relh_readings))
+            try:
+                data = self.response[idx]['data']
+                temp_readings = data['Air Temperature'][0]["readings"]
+                prec_readings = data['Precipitation'][0]["readings"]
+                relh_readings = data['Relative Humidity'][0]["readings"]
+            except KeyError:
+                print("KeyError occurred check RAW JSON API")
+                temp_dic = {
+                    "station_id": station_id,
+                    "request_datetime": request_datetime,
+                    "data_datetime": "No Data",
+                    "atemp": "No Data",
+                    "pcpn": "No Data",
+                    "relh": "No Data"
+                }
+                self.transformed_resp.append(temp_dic)
+                return self
             for jdx in range(len(temp_readings)):
                 temp_dic = {
                     "station_id": station_id,
