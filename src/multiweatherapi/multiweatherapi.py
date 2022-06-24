@@ -1,8 +1,4 @@
 import json
-from os import getenv
-from dotenv import load_dotenv
-from os.path import isfile, isdir, join
-from datetime import datetime, timezone, timedelta
 
 from .davis import DavisParam, DavisReadings
 from .spectrum import SpectrumParam, SpectrumReadings
@@ -128,47 +124,3 @@ def get_reading(vendor: str, **params) -> json:
 
 def get_version() -> str:
     return __version__
-
-
-def get_sample_reports(out_dir, start_datetime=None, end_datetime=None):
-    # if not env_file or not isfile(env_file):
-    #     raise Exception("key file must be specified and/or key file does not exist")
-    load_dotenv()
-    if not out_dir or not isdir(out_dir):
-        raise Exception("out_dir must be specified and/or out_dir folder does not exist")
-    if start_datetime and not isinstance(start_datetime, datetime):
-        raise Exception('start_datetime must be datetime.datetime instance')
-    if end_datetime and not isinstance(end_datetime, datetime):
-        raise Exception('end_datetime must be datetime.datetime instance')
-    if start_datetime and end_datetime and (start_datetime > end_datetime):
-        raise Exception('start_datetime must be earlier than end_datetime')
-    if not start_datetime or not end_datetime:
-        start_datetime = datetime.now() - timedelta(hours=24)
-        end_datetime = start_datetime + timedelta(hours=2)
-
-    def gen_report(vendor):
-        params = json.loads(getenv(vendor.upper()))
-        params['start_datetime'] = start_datetime
-        params['end_datetime'] = end_datetime
-        resp = get_reading(vendor, **params)
-        with open(join(out_dir, vendor+'.json'), 'w') as wf:
-            json.dump(resp.resp_raw, wf, indent=2)
-        print(resp.resp_raw)
-
-    # Campbell - Good
-    gen_report('campbell')
-
-    # Davis - Good
-    gen_report('davis')
-
-    # Onset - Good
-    gen_report('onset')
-
-    # Rainwise - Warning
-    gen_report('rainwise')
-
-    # Spectrum - Good
-    gen_report('spectrum')
-
-    # Zentra - Good
-    gen_report('zentra')
