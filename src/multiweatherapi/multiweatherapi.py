@@ -7,7 +7,7 @@ from .onset import OnsetParam, OnsetReadings
 from .rainwise import RainwiseParam, RainwiseReadings
 from .campbell import CampbellParam, CampbellReadings
 
-__version__ = '0.0.21'
+__version__ = '0.0.22'
 
 
 class ApiWrapper:
