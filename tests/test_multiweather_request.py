@@ -82,9 +82,10 @@ def test_api_return_some_content(vendor, params):
     assert readings is not None, "could not get readings at all"
     assert readings.resp_raw is not None, 'multiweatherapi did not return any raw readings...'
 
-def test_api_transform_stubbed(vendor, params):
+def test_api_transform(vendor, params):
     readings = multiweatherapi.get_reading(vendor, **params)
     assert readings.resp_transformed is not None, 'multiweatherapi did not return any parsed readings...'
+    assert readings.resp_transformed, 'multiweatherapi returned an empty transformed data dictionary...'
 
 def test_api_return_valid_content(api_request): 
     resp = api_request.resp_raw
