@@ -304,6 +304,7 @@ class DavisReadings:
                 raise Exception(
                     'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
             self.response.append(resp.json())
+            self.response[0]["status_code"] = resp.status_code
             # self.debug_info['response'] = self.response
         return self
 

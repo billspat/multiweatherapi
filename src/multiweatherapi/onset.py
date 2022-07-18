@@ -274,6 +274,7 @@ class OnsetReadings:
             raise Exception(
                 'Error: Device serial number entered does not exist')
         self.response.append(resp.json())
+        self.response[0]["status_code"] = resp.status_code
         self.debug_info['response'] = self.response
         return self
 
