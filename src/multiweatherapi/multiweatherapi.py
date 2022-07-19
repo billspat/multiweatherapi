@@ -54,7 +54,7 @@ class ApiWrapper:
                                 binding_ver=__version__)
             dreadings = DavisReadings(dparam)
             self.resp_raw = dreadings.response
-            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
+            self.resp_raw = Utilities.convert_to_dict(self.resp_raw, dparam)
             self.resp_transformed = dreadings.transformed_resp
             self.resp_debug = dreadings.debug_info
             return self
