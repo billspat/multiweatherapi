@@ -40,7 +40,7 @@ class ApiWrapper:
                                  binding_ver=__version__)
             zreadings = ZentraReadings(zparam)
             self.resp_raw = zreadings.response
-            self.resp_raw = Utilities.get_metadata(self.resp_raw)
+            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
             self.resp_transformed = zreadings.transformed_resp
             self.resp_debug = zreadings.debug_info
             return self
@@ -54,7 +54,7 @@ class ApiWrapper:
                                 binding_ver=__version__)
             dreadings = DavisReadings(dparam)
             self.resp_raw = dreadings.response
-            self.resp_raw = Utilities.get_metadata(self.resp_raw)
+            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
             self.resp_transformed = dreadings.transformed_resp
             self.resp_debug = dreadings.debug_info
             return self
@@ -69,7 +69,7 @@ class ApiWrapper:
                                    binding_ver=__version__)
             sreadings = SpectrumReadings(sparam)
             self.resp_raw = sreadings.response
-            self.resp_raw = Utilities.get_metadata(self.resp_raw)
+            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
             self.resp_transformed = sreadings.transformed_resp
             self.resp_debug = sreadings.debug_info
             return self
@@ -86,7 +86,7 @@ class ApiWrapper:
                                 binding_ver=__version__)
             oreadings = OnsetReadings(oparam)
             self.resp_raw = oreadings.response
-            self.resp_raw = Utilities.get_metadata(self.resp_raw)
+            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
             self.resp_transformed = oreadings.transformed_resp
             self.resp_debug = oreadings.debug_info
             return self
@@ -103,7 +103,7 @@ class ApiWrapper:
                                    binding_ver=__version__)
             rreadings = RainwiseReadings(rparam)
             self.resp_raw = rreadings.response
-            self.resp_raw = Utilities.get_metadata(self.resp_raw)
+            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
             self.resp_transformed = rreadings.transformed_resp
             self.resp_debug = rreadings.debug_info
             return self
@@ -118,7 +118,7 @@ class ApiWrapper:
                                    binding_ver=__version__)
             creadings = CampbellReadings(cparam)
             self.resp_raw = creadings.response
-            self.resp_raw = Utilities.get_metadata(self.resp_raw)
+            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
             self.resp_transformed = creadings.transformed_resp
             self.resp_debug = creadings.debug_info
             return self
