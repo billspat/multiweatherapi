@@ -119,7 +119,7 @@ class ApiWrapper:
             creadings = CampbellReadings(cparam)
             self.resp_raw = creadings.response
             self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
-            self.resp_transformed = creadings.transformed_resp
+            self.resp_transformed = creadings.transformed_resp 
             self.resp_debug = creadings.debug_info
             return self
 

@@ -1,8 +1,9 @@
 import json
+from pprint import pprint
 import pytz
 from requests import Session, Request
 from datetime import datetime, timezone
-
+from .utilities import Utilities as utilities
 
 class SpectrumParam:
     """
@@ -263,12 +264,14 @@ class SpectrumReadings:
         self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
+        self.response[0]['error_msg'] = ''
+        
         if resp.status_code != 200:
-            raise Exception(
-                'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
+            self.response[0]['status_code'] = resp.status_code
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text), 'Message')
+        
         self.response.append(resp.json())
         self.response[0]['status_code'] = resp.status_code
-        self.response[0]['error_msg'] = ''
         self.debug_info['response'] = self.response
         return self
 
@@ -279,23 +282,25 @@ class SpectrumReadings:
         self.transformed_resp = list()
         station_id = self.response[0]['station_id']
         request_datetime = self.response[0]['request_time']
-        for idx in range(1, len(self.response)):
-            equipment_rec = self.response[idx]['EquipmentRecords']
-            for jdx in range(len(equipment_rec)):
-                sensor_data = equipment_rec[jdx]['SensorData']
-                temp_dict = {
-                    "station_id": station_id,
-                    "request_datetime": request_datetime,
-                }
-                for kdx in range(len(sensor_data)):
-                    if sensor_data[kdx]['SensorType'] == 'Temperature':
-                        temp_dict['data_datetime'] = sensor_data[kdx]['FormattedTimeStamp']
-                        temp_dict['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 1)
-                        # print(temp_dict['atemp'])
-                    if sensor_data[kdx]['SensorType'] == 'Rainfall':
-                        temp_dict['pcpn'] = (float(sensor_data[kdx]['Value'])*25.4)
-                    if sensor_data[kdx]['SensorType'] == 'Relative Humidity':
-                        temp_dict['relh'] = sensor_data[kdx]['Value']
-                self.transformed_resp.append(temp_dict)
-        print(self.transformed_resp)
+
+        if self.response[0]['status_code'] == 200:
+            for idx in range(1, len(self.response)):
+                equipment_rec = self.response[idx]['EquipmentRecords']
+                for jdx in range(len(equipment_rec)):
+                    sensor_data = equipment_rec[jdx]['SensorData']
+                    temp_dict = {
+                        "station_id": station_id,
+                        "request_datetime": request_datetime,
+                    }
+                    for kdx in range(len(sensor_data)):
+                        if sensor_data[kdx]['SensorType'] == 'Temperature':
+                            temp_dict['data_datetime'] = sensor_data[kdx]['FormattedTimeStamp']
+                            temp_dict['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 1)
+                            # print(temp_dict['atemp'])
+                        if sensor_data[kdx]['SensorType'] == 'Rainfall':
+                            temp_dict['pcpn'] = (float(sensor_data[kdx]['Value'])*25.4)
+                        if sensor_data[kdx]['SensorType'] == 'Relative Humidity':
+                            temp_dict['relh'] = sensor_data[kdx]['Value']
+                    self.transformed_resp.append(temp_dict)
+        # print(self.transformed_resp)
         return self

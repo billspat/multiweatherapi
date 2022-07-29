@@ -4,6 +4,7 @@ import os
 import pytest
 from src.multiweatherapi import multiweatherapi
 import time
+from src.multiweatherapi.utilities import Utilities as utilities
 
 # for vendor fixture and dotenv, see conftest.py  
 
@@ -81,6 +82,22 @@ def test_api_return_some_content(vendor, params):
 
     assert readings is not None, "could not get readings at all"
     assert readings.resp_raw is not None, 'multiweatherapi did not return any raw readings...'
+
+def test_resp_raw_contents(vendor, params):
+    readings = multiweatherapi.get_reading(vendor, **params)
+  
+    assert readings is not None, "could not get readings at all"
+    assert readings.resp_raw is not None, 'multiweatherapi did not return any raw readings...'
+    assert readings.resp_raw.__contains__('vendor') is True, 'resp_raw is missing a vendor entry...'
+    assert readings.resp_raw.__contains__('station_id') is True, 'resp_raw is missing a station_id entry...'
+    assert readings.resp_raw.__contains__('timezone') is True, 'resp_raw is missing a timezone entry...'
+    assert readings.resp_raw.__contains__('start_datetime') is True, 'resp_raw is missing a start_datetime entry...'
+    assert readings.resp_raw.__contains__('end_datetime') is True, 'resp_raw is missing a end_datetime entry...'
+    assert readings.resp_raw.__contains__('request_time') is True, 'resp_raw is missing a request_time entry...'
+    assert readings.resp_raw.__contains__('python_binding_version') is True, 'resp_raw is missing a python_binding_version entry...'
+    assert readings.resp_raw.__contains__('error_msg') is True, 'resp_raw is missing a error_msg entry...'
+    assert readings.resp_raw.__contains__('status_code') is True, 'resp_raw is missing a status_code entry...'
+    assert readings.resp_raw.__contains__('api_output') is True, 'resp_raw is missing a api_output entry...'
 
 def test_api_transform(vendor, params):
     readings = multiweatherapi.get_reading(vendor, **params)
@@ -210,7 +227,7 @@ def test_bad_start_datetime_raises_exception(vendor, params):
 def test_bad_username_raises_exception(vendor, params):
     # Rainwise and Campbell are the only vendors at this point that have a username field.
     if vendor in ('RAINWISE', 'CAMPBELL'):  
-        params['username'] = ''
+        params['username'] = '' # Note: This test doesn't work as mwapi doesn't check for the empty string, so an Exception isn't thrown.
 
         with pytest.raises(Exception) as error:
             multiweatherapi.get_reading(vendor, **params)

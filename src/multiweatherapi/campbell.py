@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 import json
 import pytz
 from requests import Session, Request
+from .utilities import Utilities as utilities
 
 
 class CampbellParam:
@@ -72,7 +73,7 @@ class CampbellParam:
         self.__get_measurements()
 
     def __check_params(self):
-        if self.username is None or not isinstance(self.username, str):
+        if self.username is None or not isinstance(self.username, str) or self.username == '':
             raise Exception('username must be specified and only str type is supported')
         if self.user_passwd is None or not isinstance(self.user_passwd, str):
             raise Exception('user_passwd must be specified and only str type is supported')
@@ -316,15 +317,16 @@ class CampbellReadings:
         self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
+        self.response[0]['error_msg'] = ''
+
         if resp.status_code != 200:
-            raise Exception(
-                'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
+            self.response[0]['status_code'] = resp.status_code
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'Message')
         elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
-            raise Exception(
-                'Error: Device serial number entered does not exist')
+            self.response[0]['status_code'] = resp.status_code
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'Message')
         self.response.append(resp.json())
         self.response[0]['status_code'] = resp.status_code
-        self.response[0]['error_msg'] = ''
         self.debug_info['response'] = self.response
         return self
 
@@ -339,5 +341,5 @@ class CampbellReadings:
         #     self.device_info = 'N/A'
         # self.timeseries = list(
         #     map(lambda x: CampbellTimeseriesRecord(x), self.response['device']['timeseries']))
-        print(self.transformed_resp)
+        # print(self.transformed_resp)
         return self

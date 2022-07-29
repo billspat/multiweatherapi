@@ -1,10 +1,12 @@
 from datetime import datetime
-
-
-from datetime import datetime
 import pprint
 import pytz
 class Utilities:
+    def case_insensitive_key(this_dict, this_key):
+        this_key = this_key.lower()
+        value = [this_dict[key] for key in this_dict if key.lower() == this_key][0]
+        return value.replace('"', '')
+        
     def convert_to_dict(resp_raw, davisParm = None):
     # Takes a resp_raw list object and converts it to a straight dictionary.
         new_raw = {}
