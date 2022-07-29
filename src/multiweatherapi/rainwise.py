@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import json
 import pytz
 from requests import Session, Request
-
+from .utilities import Utilities as utilities
 
 class RainwiseParam:
     """
@@ -261,15 +261,16 @@ class RainwiseReadings:
         self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
+        self.response[0]['error_msg'] = ''
+        
         if resp.status_code != 200:
-            raise Exception(
-                'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
+            self.response[0]['status_code'] = resp.status_code
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'Message')
         elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
-            raise Exception(
-                'Error: Device serial number entered does not exist')
+            self.response[0]['status_code'] = resp.status_code
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'Message')
         self.response.append(resp.json())
         self.response[0]['status_code'] = resp.status_code
-        self.response[0]['error_msg'] = ''
         self.debug_info['response'] = self.response
         return self
 
@@ -291,5 +292,5 @@ class RainwiseReadings:
                     "relh": self.response[idx]['hum'][k]
                 }
                 self.transformed_resp.append(temp_dic)
-        print(self.transformed_resp)
+        # print(self.transformed_resp)
         return self

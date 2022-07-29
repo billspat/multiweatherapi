@@ -4,7 +4,7 @@ from time import sleep
 
 import pytz
 from requests import Session, Request
-
+from .utilities import Utilities as utilities
 
 class ZentraParam:
     """
@@ -243,16 +243,18 @@ class ZentraReadings:
                 break
             print("message: {}".format(resp.text))
             sleep(60)
+        
+        self.response[0]['error_msg'] = ''
 
         if resp.status_code != 200:
-            raise Exception(
-                'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
+            import pprint
+            self.response[0]['status_code'] = resp.status_code
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'detail') 
         elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
-            raise Exception(
-                'Error: Device serial number entered does not exist')
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'detail') 
+        
         self.response.append(resp.json())
         self.response[0]['status_code'] = resp.status_code
-        self.response[0]['error_msg'] = ''
         self.debug_info['response'] = self.response
         return self
 
@@ -263,25 +265,27 @@ class ZentraReadings:
         self.transformed_resp = list()
         station_id = self.response[0]['station_id']
         request_datetime = self.response[0]['request_time']
-        for idx in range(1, len(self.response)):
-            try:
-                data = self.response[idx]['data']
-                temp_readings = data['Air Temperature'][0]["readings"]
-                prec_readings = data['Precipitation'][0]["readings"]
-                relh_readings = data['Relative Humidity'][0]["readings"]
-            except KeyError:
-                print("KeyError occurred check RAW JSON API")
-                self.transformed_resp = list()
-                return self
-            for jdx in range(len(temp_readings)):
-                temp_dic = {
-                    "station_id": station_id,
-                    "request_datetime": request_datetime,
-                    "data_datetime": temp_readings[jdx]['datetime'][:-6],
-                    "atemp": temp_readings[jdx]['value'],
-                    "pcpn": prec_readings[jdx]['value'],
-                    "relh": relh_readings[jdx]['value']
-                }
-                self.transformed_resp.append(temp_dic)
+
+        if self.response[0]['status_code'] == 200:
+            for idx in range(1, len(self.response)):
+                try:
+                    data = self.response[idx]['data']
+                    temp_readings = data['Air Temperature'][0]["readings"]
+                    prec_readings = data['Precipitation'][0]["readings"]
+                    relh_readings = data['Relative Humidity'][0]["readings"]
+                except KeyError:
+                    print("KeyError occurred check RAW JSON API")
+                    self.transformed_resp = list()
+                    return self
+                for jdx in range(len(temp_readings)):
+                    temp_dic = {
+                        "station_id": station_id,
+                        "request_datetime": request_datetime,
+                        "data_datetime": temp_readings[jdx]['datetime'][:-6],
+                        "atemp": temp_readings[jdx]['value'],
+                        "pcpn": prec_readings[jdx]['value'],
+                        "relh": relh_readings[jdx]['value']
+                    }
+                    self.transformed_resp.append(temp_dic)
         # print(self.transformed_resp)
         return self

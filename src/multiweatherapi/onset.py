@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 import json
 import pytz
 from requests import Session, Request
-
+from .utilities import Utilities as utilities
 
 class OnsetParam:
     """
@@ -256,6 +256,7 @@ class OnsetReadings:
         """
         # prep response list
         self.response = list()
+
         metadata = {
             "vendor": "onset",
             "station_id": self.debug_info['sn'],
@@ -267,15 +268,21 @@ class OnsetReadings:
         self.response.append(metadata)
         # Send the request and get the JSON response
         resp = Session().send(self.request)
-        if resp.status_code != 200:
-            raise Exception(
-                'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
-        elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
-            raise Exception(
-                'Error: Device serial number entered does not exist')
-        self.response.append(resp.json())
-        self.response[0]['status_code'] = resp.status_code
         self.response[0]['error_msg'] = ''
+
+        if resp.status_code != 200:
+            self.response[0]['status_code'] = resp.status_code
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'Message')
+        elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
+            self.response[0]['status_code'] = resp.status_code
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'Message')
+        elif 'Found: 0 results' in resp.text:
+            self.response[0] = {'status_code' : 404, 'error_msg' : 'Not found'}
+        else:
+            self.response[0]['status_code'] = resp.status_code
+
+        self.response.append(resp.json())
+        
         self.debug_info['response'] = self.response
         return self
 
@@ -309,25 +316,27 @@ class OnsetReadings:
                 self.transformed_resp[resp_index][key] = value
 
         self.transformed_resp = list()
-        station_id = self.response[0]['station_id']
-        request_datetime = self.response[0]['request_time']
-        for idx in range(1, len(self.response)):
-            observe_list = self.response[idx]['observation_list']
-            for kdx in range(len(observe_list)):
-                if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
-                    data_datetime = observe_list[kdx]['timestamp']
-                    atemp = round(float(observe_list[kdx]['si_value']), 1)
-                    insert_resp("atemp", atemp, data_datetime)
 
-                if self.debug_info['sensor_sn']['pcpn'] == observe_list[kdx]['sensor_sn']:
-                    data_datetime = observe_list[kdx]['timestamp']
-                    pcpn = observe_list[kdx]['si_value']
-                    insert_resp("pcpn", pcpn, data_datetime)
+        if self.response[0]['status_code'] == 200:
+            station_id = self.response[0]['station_id']
+            request_datetime = self.response[0]['request_time']
+            for idx in range(1, len(self.response)):
+                observe_list = self.response[idx]['observation_list']
+                for kdx in range(len(observe_list)):
+                    if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
+                        data_datetime = observe_list[kdx]['timestamp']
+                        atemp = round(float(observe_list[kdx]['si_value']), 1)
+                        insert_resp("atemp", atemp, data_datetime)
 
-                if self.debug_info['sensor_sn']['relh'] == observe_list[kdx]['sensor_sn']:
-                    data_datetime = observe_list[kdx]['timestamp']
-                    relh = observe_list[kdx]['us_value']
-                    insert_resp("relh", relh, data_datetime)
+                    if self.debug_info['sensor_sn']['pcpn'] == observe_list[kdx]['sensor_sn']:
+                        data_datetime = observe_list[kdx]['timestamp']
+                        pcpn = observe_list[kdx]['si_value']
+                        insert_resp("pcpn", pcpn, data_datetime)
 
-        print(self.transformed_resp)
+                    if self.debug_info['sensor_sn']['relh'] == observe_list[kdx]['sensor_sn']:
+                        data_datetime = observe_list[kdx]['timestamp']
+                        relh = observe_list[kdx]['us_value']
+                        insert_resp("relh", relh, data_datetime)
+
+        # print(self.transformed_resp)
         return self

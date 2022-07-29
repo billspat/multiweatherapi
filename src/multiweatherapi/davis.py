@@ -5,7 +5,7 @@ import json
 import pytz
 from datetime import datetime, timezone, timedelta
 from requests import Session, Request
-
+from .utilities import Utilities as utilities
 
 class DavisParam:
     """
@@ -300,12 +300,14 @@ class DavisReadings:
         # Send the request and get the JSON response
         for req in self.request:
             resp = Session().send(req)
+            self.response[0]['error_msg'] = ''
+            
             if resp.status_code != 200:
-                raise Exception(
-                    'Request failed with \'{}\' status code and \'{}\' message.'.format(resp.status_code, resp.text))
+                self.response[0]['status_code'] = resp.status_code
+                self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text), 'Message')                
+
             self.response.append(resp.json())
             self.response[0]['status_code'] = resp.status_code
-            self.response[0]['error_msg'] = ''
             # self.debug_info['response'] = self.response
         return self
 
@@ -328,24 +330,26 @@ class DavisReadings:
             return dt.strftime('%Y-%m-%d %H:%M:%S')
 
         self.transformed_resp = list()
-        station_id = self.response[0]['station_id']
-        request_datetime = self.response[0]['request_time']
-        for idx in range(1, len(self.response)):
-            sensors = self.response[idx]['sensors']
-            for jdx in range(len(sensors)):
-                data = sensors[jdx]['data']
-                for kdx in range(len(data)):
-                    if "temp_out" not in data[kdx]:
-                        break
-                    else:
-                        temp_dic = {
-                            "station_id": station_id,
-                            "request_datetime": request_datetime,
-                            "data_datetime": epoch_converter(data[kdx]['ts'], self.response[0]['timezone']),
-                            "atemp": round(((float(data[kdx]['temp_out']) - 32) * 5 / 9), 1),
-                            "pcpn": data[kdx]['rainfall_mm'],
-                            "relh": data[kdx]['hum_out']
-                        }
-                        self.transformed_resp.append(temp_dic)
-        print(self.transformed_resp)
+        
+        if self.response[0]['status_code'] == 200:
+            station_id = self.response[0]['station_id']
+            request_datetime = self.response[0]['request_time']
+            for idx in range(1, len(self.response)):
+                sensors = self.response[idx]['sensors']
+                for jdx in range(len(sensors)):
+                    data = sensors[jdx]['data']
+                    for kdx in range(len(data)):
+                        if "temp_out" not in data[kdx]:
+                            break
+                        else:
+                            temp_dic = {
+                                "station_id": station_id,
+                                "request_datetime": request_datetime,
+                                "data_datetime": epoch_converter(data[kdx]['ts'], self.response[0]['timezone']),
+                                "atemp": round(((float(data[kdx]['temp_out']) - 32) * 5 / 9), 1),
+                                "pcpn": data[kdx]['rainfall_mm'],
+                                "relh": data[kdx]['hum_out']
+                            }
+                            self.transformed_resp.append(temp_dic)
+        # print(self.transformed_resp)
         return self
