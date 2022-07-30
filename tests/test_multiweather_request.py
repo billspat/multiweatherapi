@@ -106,7 +106,7 @@ def test_api_transform(vendor, params):
 
 def test_api_return_valid_content(api_request): 
     resp = api_request.resp_raw
-    assert type(resp) ==  type([]), "response is not array type"
+    assert type(resp) ==  type({}), "response is not array type"
 
 # The following tests are for Davis only because:
 #    - Davis can only return up to 24 hours worth of data at a time.
