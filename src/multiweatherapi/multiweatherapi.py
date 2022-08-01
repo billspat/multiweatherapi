@@ -8,7 +8,7 @@ from .rainwise import RainwiseParam, RainwiseReadings
 from .campbell import CampbellParam, CampbellReadings
 from .utilities import Utilities
 
-__version__ = '0.0.24'
+__version__ = '0.0.25'
 
 
 class ApiWrapper:
