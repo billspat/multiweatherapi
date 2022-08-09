@@ -5,8 +5,24 @@ import pytest
 from src.multiweatherapi import multiweatherapi
 import time
 from src.multiweatherapi.utilities import Utilities as utilities
+import numbers
 
 # for vendor fixture and dotenv, see conftest.py  
+def is_date(datestring):
+    from dateutil.parser import parse
+
+    try:
+        parse(datestring)
+        return True
+    except ValueError:
+        return False
+
+def is_number(string):
+    try:
+        temp = float(string)
+        return True
+    except ValueError:
+        return False
 
 def get_items(dictionary):
     for key, value in dictionary.items():
@@ -99,14 +115,32 @@ def test_resp_raw_contents(vendor, params):
     assert readings.resp_raw.__contains__('status_code') is True, 'resp_raw is missing a status_code entry...'
     assert readings.resp_raw.__contains__('api_output') is True, 'resp_raw is missing a api_output entry...'
 
-def test_api_transform(vendor, params):
+def test_api_transform(vendor, params): 
+# Test whether or not the transformed data has all the required fields and that they are of the correct data type.  
     readings = multiweatherapi.get_reading(vendor, **params)
     assert readings.resp_transformed is not None, 'multiweatherapi did not return any parsed readings...'
-    assert readings.resp_transformed, 'multiweatherapi returned an empty transformed data dictionary...'
+    assert isinstance(readings.resp_transformed, list), 'response is not array type...'
+    print(readings.resp_transformed)
+    print(len(readings.resp_transformed))
+    assert len(readings.resp_transformed) > 0, 'multiweatherapi returned no data...'
 
-def test_api_return_valid_content(api_request): 
-    resp = api_request.resp_raw
-    assert type(resp) ==  type({}), "response is not array type"
+    # Loop through all the entries in resp_transformed, checking for the existence of the item and if it is of the correct type.
+    index = 1
+    
+    for data in readings.resp_transformed:
+        assert data.__contains__('station_id'), 'Record #' + str(index) + ' is missing a station_id entry...'
+        assert data.__contains__('request_datetime'), 'Record #' + str(index) + ' is missing a request_datetime entry...'
+        assert data.__contains__('data_datetime'), 'Record #' + str(index) + ' is missing a data_datetime entry...'
+        assert data.__contains__('atemp'), 'Record #' + str(index) + ' is missing a atemp entry...'
+        assert data.__contains__('pcpn'), 'Record #' + str(index) + ' is missing a pcpn entry...'
+        assert data.__contains__('relh'), 'Record #' + str(index) + ' is missing a relh entry...'    
+        assert isinstance(data['station_id'], str), 'Record #' + str(index) + ' station_id entry is a ' + str(type(data['station_id'])) + ', not a str...'
+        assert is_date(data['request_datetime']), 'Record #' + str(index) + ' request_datetime entry is not a valid datetime object...'
+        assert is_date(data['data_datetime']), 'Record #' + str(index) + ' data_datetime entry is not a valid datetime object...'
+        assert is_number(data['atemp']), 'Record #' + str(index) + ' atemp entry of *' + str(data['atemp']) + '* is not a valid number...'
+        assert is_number(data['pcpn']) , 'Record #' + str(index) + ' pcpn entry *' + str(data['pcpn']) + '* is not a valid number...'
+        assert is_number(data['relh']) , 'Record #' + str(index) + ' relh entry *' + str(data['relh']) + '* is not a valid number...'
+        index += 1  
 
 # The following tests are for Davis only because:
 #    - Davis can only return up to 24 hours worth of data at a time.
