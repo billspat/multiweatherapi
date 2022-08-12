@@ -52,6 +52,7 @@ class ZentraParam:
         self.json_file = json_file
         self.binding_ver = binding_ver
 
+    def _process(self):
         self.__check_params()
         self.__format_time()
 
@@ -146,6 +147,8 @@ class ZentraReadings:
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }
+
+    def _process(self, param: ZentraParam):
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()

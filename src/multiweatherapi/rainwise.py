@@ -57,6 +57,7 @@ class RainwiseParam:
         self.json_file = json_file
         self.binding_ver = binding_ver
 
+    def _process(self):
         self.__check_params()
         self.__format_time()
 
@@ -78,6 +79,8 @@ class RainwiseParam:
             raise Exception('username and mac parameters must be included and same value')
         if self.sid is None or self.pid is None or self.sid != self.pid:
             raise Exception('sid and pid parameters must be included and same value')
+        if not self.ret_form:
+            raise Exception('Missing ret_form parameter')
         if self.ret_form.lower() != 'json' and self.ret_form.lower() != 'xml':
             raise Exception('ret_form must either be json or xml')
 
@@ -159,6 +162,8 @@ class RainwiseReadings:
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }
+
+    def _process(self, param: RainwiseParam):
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()

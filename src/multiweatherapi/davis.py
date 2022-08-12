@@ -50,10 +50,11 @@ class DavisParam:
         self.json_file = json_file
         self.binding_ver = binding_ver
 
+    def _process(self):
         self.__check_params()
         self.__format_time()
 
-        if json_file is None:
+        if self.json_file is None:
             self.__compute_signature()
 
     def __check_params(self):
@@ -65,10 +66,12 @@ class DavisParam:
             raise Exception('start_datetime must be earlier than end_datetime')
         if not self.json_file and not (self.start_datetime and self.end_datetime):
             raise Exception('state_datetime and end_datetime must be specified')
-        if self.apikey is None or self.apisec is None:
-            raise Exception('"apikey" and "apisec" parameters must both be included.')
+        if self.apikey is None:
+            raise Exception('Missing apikey parameter.')
+        if self.apisec is None:
+            raise Exception('Missing apisec parameter.')            
         if self.sn is None:
-            raise Exception('"sn" parameter must be included.')
+            raise Exception('Missing sn parameter.')
 
         if self.start_datetime and self.end_datetime:
             # remove sub-second since API cannot distinguish them different
@@ -205,6 +208,7 @@ class DavisReadings:
         self.request = list()
         self.response = list()
 
+    def _process(self, param: DavisParam):
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()
