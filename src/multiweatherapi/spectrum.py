@@ -56,6 +56,7 @@ class SpectrumParam:
         self.json_file = json_file
         self.binding_ver = binding_ver
 
+    def _process(self):
         self.__check_params()
         self.__utc_to_local()
 
@@ -157,6 +158,8 @@ class SpectrumReadings:
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }
+
+    def _process(self, param: SpectrumParam):
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()
@@ -268,9 +271,18 @@ class SpectrumReadings:
         
         if resp.status_code != 200:
             self.response[0]['status_code'] = resp.status_code
-            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text), 'Message')
+
+            # This check was put in because there is no resp.text value if the API returns a 403 error.
+            if len(resp.text) > 0:
+                self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text), 'Message')
+            else:
+                self.response[0]['error_msg'] = resp.reason
         
-        self.response.append(resp.json())
+        # This check was put in because when and invalid apikey was passed, the code bombed because of the API was returning a 403
+        # error with no response body (which the json decoder does not like).
+        if len(resp._content) > 0:
+            self.response.append(resp.json())
+
         self.response[0]['status_code'] = resp.status_code
         self.debug_info['response'] = self.response
         return self

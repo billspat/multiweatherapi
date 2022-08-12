@@ -30,97 +30,140 @@ class ApiWrapper:
 
     def get_reading(self):
         if self.vendor == 'zentra':
-            zparam = ZentraParam(sn=self.params.get('sn', None),
-                                 token=self.params.get('token', None),
-                                 start_datetime=self.params.get('start_datetime', None),
-                                 end_datetime=self.params.get('end_datetime', None),
-                                 start_mrid=self.params.get('start_mrid', None),
-                                 end_mrid=self.params.get('end_mrid', None),
-                                 tz=self.params.get('tz', None),
-                                 binding_ver=__version__)
-            zreadings = ZentraReadings(zparam)
-            self.resp_raw = zreadings.response
-            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
-            self.resp_transformed = zreadings.transformed_resp
-            self.resp_debug = zreadings.debug_info
+            try:
+                zparam = ZentraParam(sn=self.params.get('sn', None),
+                                    token=self.params.get('token', None),
+                                    start_datetime=self.params.get('start_datetime', None),
+                                    end_datetime=self.params.get('end_datetime', None),
+                                    start_mrid=self.params.get('start_mrid', None),
+                                    end_mrid=self.params.get('end_mrid', None),
+                                    tz=self.params.get('tz', None),
+                                    binding_ver=__version__)
+                zparam._process()
+                zreadings = ZentraReadings(zparam)
+                zreadings._process(zparam)
+                self.resp_raw = zreadings.response
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
+                self.resp_transformed = zreadings.transformed_resp
+                self.resp_debug = zreadings.debug_info
+            except Exception as error:
+                zreadings = ZentraReadings(zparam)
+                self.resp_raw = Utilities.create_error_response('ZENTRA', zparam, zreadings, str(error))
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)                     
+            return self                
             return self
         elif self.vendor == 'davis':
-            dparam = DavisParam(sn=self.params.get('sn', None),
-                                apikey=self.params.get('apikey', None),
-                                apisec=self.params.get('apisec', None),
-                                start_datetime=self.params.get('start_datetime', None),
-                                end_datetime=self.params.get('end_datetime', None),
-                                tz=self.params.get('tz', None),
-                                binding_ver=__version__)
-            dreadings = DavisReadings(dparam)
-            self.resp_raw = dreadings.response
-            self.resp_raw = Utilities.convert_to_dict(self.resp_raw, dparam)
-            self.resp_transformed = dreadings.transformed_resp
-            self.resp_debug = dreadings.debug_info
+            try:
+                dparam = DavisParam(sn=self.params.get('sn', None),
+                                    apikey=self.params.get('apikey', None),
+                                    apisec=self.params.get('apisec', None),
+                                    start_datetime=self.params.get('start_datetime', None),
+                                    end_datetime=self.params.get('end_datetime', None),
+                                    tz=self.params.get('tz', None),
+                                    binding_ver=__version__)
+                dparam._process()
+                dreadings = DavisReadings(dparam)
+                dreadings._process(dparam)
+                self.resp_raw = dreadings.response
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw, dparam)
+                self.resp_transformed = dreadings.transformed_resp
+                self.resp_debug = dreadings.debug_info
+            except Exception as error:
+                dreadings = DavisReadings(dparam)
+                self.resp_raw = Utilities.create_error_response('DAVIS', dparam, dreadings, str(error))
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)                     
             return self
         elif self.vendor == 'spectrum':
-            sparam = SpectrumParam(sn=self.params.get('sn', None),
-                                   apikey=self.params.get('apikey', None),
-                                   start_datetime=self.params.get('start_datetime', None),
-                                   end_datetime=self.params.get('end_datetime', None),
-                                   date=self.params.get('date', None),
-                                   tz=self.params.get('tz', None),
-                                   count=self.params.get('count', None),
-                                   binding_ver=__version__)
-            sreadings = SpectrumReadings(sparam)
-            self.resp_raw = sreadings.response
-            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
-            self.resp_transformed = sreadings.transformed_resp
-            self.resp_debug = sreadings.debug_info
+            try:
+                sparam = SpectrumParam(sn=self.params.get('sn', None),
+                                    apikey=self.params.get('apikey', None),
+                                    start_datetime=self.params.get('start_datetime', None),
+                                    end_datetime=self.params.get('end_datetime', None),
+                                    date=self.params.get('date', None),
+                                    tz=self.params.get('tz', None),
+                                    count=self.params.get('count', None),
+                                    binding_ver=__version__)
+                sparam._process()
+                sreadings = SpectrumReadings(sparam)
+                sreadings._process(sparam)
+                self.resp_raw = sreadings.response
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
+                self.resp_transformed = sreadings.transformed_resp
+                self.resp_debug = sreadings.debug_info
+            except Exception as error:
+                sreadings = SpectrumReadings(sparam)
+                self.resp_raw = Utilities.create_error_response('SPECTRUM', sparam, sreadings, str(error))
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)     
             return self
         elif self.vendor == 'onset':
-            oparam = OnsetParam(sn=self.params.get('sn', None),
-                                client_id=self.params.get('client_id', None),
-                                client_secret=self.params.get('client_secret', None),
-                                ret_form=self.params.get('ret_form', None),
-                                user_id=self.params.get('user_id', None),
-                                start_datetime=self.params.get('start_datetime', None),
-                                end_datetime=self.params.get('end_datetime', None),
-                                tz=self.params.get('tz', None),
-                                sensor_sn=self.params.get('sensor_sn', None),
-                                binding_ver=__version__)
-            oreadings = OnsetReadings(oparam)
-            self.resp_raw = oreadings.response
-            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
-            self.resp_transformed = oreadings.transformed_resp
-            self.resp_debug = oreadings.debug_info
+            try:
+                oparam = OnsetParam(sn=self.params.get('sn', None),
+                                    client_id=self.params.get('client_id', None),
+                                    client_secret=self.params.get('client_secret', None),
+                                    ret_form=self.params.get('ret_form', None),
+                                    user_id=self.params.get('user_id', None),
+                                    start_datetime=self.params.get('start_datetime', None),
+                                    end_datetime=self.params.get('end_datetime', None),
+                                    tz=self.params.get('tz', None),
+                                    sensor_sn=self.params.get('sensor_sn', None),
+                                    binding_ver=__version__)
+                oparam._process()                                
+                oreadings = OnsetReadings(oparam)
+                oreadings._process(oparam)
+                self.resp_raw = oreadings.response
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
+                self.resp_transformed = oreadings.transformed_resp
+                self.resp_debug = oreadings.debug_info
+            except Exception as error:
+                oreadings = OnsetReadings(oparam)
+                self.resp_raw = Utilities.create_error_response('ONSET', oparam, oreadings, str(error))
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)                           
             return self
         elif self.vendor == 'rainwise':
-            rparam = RainwiseParam(username=self.params.get('username', None),
-                                   sid=self.params.get('sid', None),
-                                   pid=self.params.get('pid', None),
-                                   mac=self.params.get('mac', None),
-                                   ret_form=self.params.get('ret_form', None),
-                                   interval=self.params.get('interval', None),
-                                   start_datetime=self.params.get('start_datetime', None),
-                                   end_datetime=self.params.get('end_datetime', None),
-                                   tz=self.params.get('tz', None),
-                                   binding_ver=__version__)
-            rreadings = RainwiseReadings(rparam)
-            self.resp_raw = rreadings.response
-            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
-            self.resp_transformed = rreadings.transformed_resp
-            self.resp_debug = rreadings.debug_info
+            try:
+                rparam = RainwiseParam(username=self.params.get('username', None),
+                                    sid=self.params.get('sid', None),
+                                    pid=self.params.get('pid', None),
+                                    mac=self.params.get('mac', None),
+                                    ret_form=self.params.get('ret_form', None),
+                                    interval=self.params.get('interval', None),
+                                    start_datetime=self.params.get('start_datetime', None),
+                                    end_datetime=self.params.get('end_datetime', None),
+                                    tz=self.params.get('tz', None),
+                                    binding_ver=__version__)
+                rparam._process()    
+                rreadings = RainwiseReadings(rparam)
+                rreadings._process(rparam)
+                self.resp_raw = rreadings.response
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
+                self.resp_transformed = rreadings.transformed_resp
+                self.resp_debug = rreadings.debug_info
+            except Exception as error:
+                rreadings = RainwiseReadings(rparam)
+                self.resp_raw = Utilities.create_error_response('RAINWISE', rparam, rreadings, str(error))
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
             return self
         elif self.vendor == 'campbell':
-            cparam = CampbellParam(username=self.params.get('username', None),
-                                   user_passwd=self.params.get('user_passwd', None),
-                                   station_id=self.params.get('station_id', None),
-                                   station_lid=self.params.get('station_lid', None),
-                                   start_datetime=self.params.get('start_datetime', None),
-                                   end_datetime=self.params.get('end_datetime', None),
-                                   tz=self.params.get('tz', None),
-                                   binding_ver=__version__)
-            creadings = CampbellReadings(cparam)
-            self.resp_raw = creadings.response
-            self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
-            self.resp_transformed = creadings.transformed_resp 
-            self.resp_debug = creadings.debug_info
+            try:
+                cparam = CampbellParam(username=self.params.get('username', None),
+                                    user_passwd=self.params.get('user_passwd', None),
+                                    station_id=self.params.get('station_id', None),
+                                    station_lid=self.params.get('station_lid', None),
+                                    start_datetime=self.params.get('start_datetime', None),
+                                    end_datetime=self.params.get('end_datetime', None),
+                                    tz=self.params.get('tz', None),
+                                    binding_ver=__version__)
+                cparam._process()                                    
+                creadings = CampbellReadings(cparam)
+                creadings._process(cparam)
+                self.resp_raw = creadings.response
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
+                self.resp_transformed = creadings.transformed_resp 
+                self.resp_debug = creadings.debug_info
+            except Exception as error:
+                creadings = CampbellReadings(cparam)
+                self.resp_raw = Utilities.create_error_response('CAMPBELL', cparam, creadings, str(error))
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)           
             return self
 
 

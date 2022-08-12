@@ -66,6 +66,8 @@ class CampbellParam:
         self.json_file = json_file
         self.binding_ver = binding_ver
 
+    def _process(self):
+        """ This method makes the calls that the __init__ method used to. """
         self.__check_params()
         self.__format_time()
         self.__get_auth()
@@ -78,8 +80,10 @@ class CampbellParam:
         if self.user_passwd is None or not isinstance(self.user_passwd, str):
             raise Exception('user_passwd must be specified and only str type is supported')
         self.credentials = {'username': self.username, 'password': self.user_passwd}
-        if self.station_id is None or self.station_lid is None:
-            raise Exception('station_id and station_lid parameters must be included')
+        if self.station_id is None:
+            raise Exception('station_id parameter must be included')
+        if self.station_lid is None:
+            raise Exception('station_lid parameter must be included')
         if self.start_datetime and not isinstance(self.start_datetime, datetime):
             raise Exception('start_datetime must be datetime.datetime instance')
         if self.end_datetime and not isinstance(self.end_datetime, datetime):
@@ -227,6 +231,9 @@ class CampbellReadings:
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }
+
+    def _process(self, param: CampbellParam):
+        """ This calls the methods that __init__ used to. """
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()

@@ -56,6 +56,7 @@ class OnsetParam:
         self.json_file = json_file
         self.binding_ver = binding_ver
 
+    def _process(self):
         self.__check_params()
         self.__format_time()
         self.__get_auth()
@@ -75,6 +76,14 @@ class OnsetParam:
             raise Exception('ret_form must be specified and currently only \'JSON\' is supported')
         if self.user_id is None or not isinstance(self.user_id, str):
             raise Exception('userId must be specified and only str type is supported')
+        if self.sensor_sn_dict is None:
+            raise Exception('sensor_sn is missing')
+        if 'atemp' not in self.sensor_sn_dict:
+            raise Exception('atemp information is missing from the sensor_sn dictionary')
+        if 'pcpn' not in self.sensor_sn_dict:
+            raise Exception('pcpn information is missing from the sensor_sn dictionary')
+        if 'relh' not in self.sensor_sn_dict:
+            raise Exception('relh information is missing from the sensor_sn dictionary')                        
         self.path_param = {'format': self.ret_form, 'userId': self.user_id}
 
     def __utc_to_local(self):
@@ -181,6 +190,8 @@ class OnsetReadings:
             'json_str': param.json_file,
             'binding_ver': param.binding_ver
         }
+
+    def _process(self, param: OnsetParam):
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()
