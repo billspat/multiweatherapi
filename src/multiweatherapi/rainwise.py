@@ -284,7 +284,6 @@ class RainwiseReadings:
         Transform the response.
         """
         self.transformed_resp = list()
-        resp_timezone = self.response[0]['timezone']
         station_id = self.response[0]['station_id']
         request_datetime = self.response[0]['request_time']
         for idx in range(1, len(self.response)):
@@ -292,7 +291,7 @@ class RainwiseReadings:
                 temp_dic = {
                     "station_id": station_id,
                     "request_datetime": request_datetime,
-                    "data_datetime": utilities.local_to_utc(v, resp_timezone).strftime('%Y-%m-%d %H:%M:%S'),
+                    "data_datetime": v,
                     "atemp": round(((float(self.response[idx]['temp'][k]) - 32) * 5 / 9), 1),
                     "pcpn": (float(self.response[idx]['precip'][k])*25.4),
                     "relh": self.response[idx]['hum'][k]
