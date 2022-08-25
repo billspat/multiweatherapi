@@ -21,12 +21,8 @@ class RainwiseParam:
         Values xml or json; returns the data as JSON or XML
     interval: int, optional (default 1 min)
         Data aggregation interval, 1, 5, 10, 15, 30, 60 minute intervals
-    start_datetime_org : datetime
-        Stores datetime object passed initially
     start_datetime : datetime (UTC expected)
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-    end_datetime_org : datetime
-        Stores datetime object passed initially
     end_datetime : datetime (UTC expected)
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     tz : str
@@ -46,9 +42,7 @@ class RainwiseParam:
         self.mac = mac
         self.ret_form = ret_form
         self.interval = interval
-        self.start_datetime_org = start_datetime
         self.start_datetime = start_datetime
-        self.end_datetime_org = end_datetime
         self.end_datetime = end_datetime
         self.cur_datetime = datetime.now(timezone.utc)
         self.tz = tz
@@ -152,9 +146,7 @@ class RainwiseReadings:
             'mac': param.mac,
             'ret_form': param.ret_form,
             'interval': param.interval,
-            'start_datetime_org': param.start_datetime_org,
             'start_datetime': param.start_datetime,
-            'end_datetime_org': param.end_datetime_org,
             'end_datetime': param.end_datetime,
             'cur_datetime': param.cur_datetime,
             'tz': param.tz,
@@ -283,7 +275,11 @@ class RainwiseReadings:
         """
         Transform the response.
         """
-        self.transformed_resp = list()
+        self.transformed_resp = utilities.init_transformed_resp(
+            'rainwise',
+            utilities.local_to_utc(self.debug_info['start_datetime'], self.debug_info['tz']),
+            utilities.local_to_utc(self.debug_info['end_datetime'], self.debug_info['tz']))
+
         resp_timezone = self.response[0]['timezone']
         station_id = self.response[0]['station_id']
         request_datetime = self.response[0]['request_time']
@@ -297,6 +293,6 @@ class RainwiseReadings:
                     "pcpn": (float(self.response[idx]['precip'][k])*25.4),
                     "relh": self.response[idx]['hum'][k]
                 }
-                self.transformed_resp.append(temp_dic)
+                self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
         # print(self.transformed_resp)
         return self

@@ -15,12 +15,8 @@ class ZentraParam:
         The serial number of the device
     token : str
         The user's access token
-    start_datetime_org : datetime
-        Stores datetime object passed initially
     start_datetime : datetime
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-    end_datetime_org : datetime
-        Stores datetime object passed initially
     end_datetime : datetime
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     conversion_msg : str
@@ -40,9 +36,7 @@ class ZentraParam:
                  end_mrid=None, json_file=None, binding_ver=None):
         self.sn = sn
         self.token = token
-        self.start_datetime_org = start_datetime
         self.start_datetime = start_datetime
-        self.end_datetime_org = end_datetime
         self.end_datetime = end_datetime
         self.cur_datetime = datetime.now(timezone.utc)
         self.tz = tz
@@ -135,9 +129,7 @@ class ZentraReadings:
         self.debug_info = {
             'sn': param.sn,
             'token': param.token,
-            'start_datetime_org': param.start_datetime_org,
             'start_datetime': param.start_datetime,
-            'end_datetime_org': param.end_datetime_org,
             'end_datetime': param.end_datetime,
             'cur_datetime': param.cur_datetime,
             'tz': param.tz,
@@ -265,12 +257,16 @@ class ZentraReadings:
         """
         Parses the response.
         """
-        self.transformed_resp = list()
-        station_id = self.response[0]['station_id']
-        request_datetime = self.response[0]['request_time']
-        resp_tz = self.response[0]['timezone']
+        self.transformed_resp = utilities.init_transformed_resp(
+            'zentra',
+            utilities.local_to_utc(self.debug_info['start_datetime'], self.debug_info['tz'], '%m-%d-%Y %H:%M'),
+            utilities.local_to_utc(self.debug_info['end_datetime'], self.debug_info['tz'], '%m-%d-%Y %H:%M'))
 
         if self.response[0]['status_code'] == 200:
+            station_id = self.response[0]['station_id']
+            request_datetime = self.response[0]['request_time']
+            resp_tz = self.response[0]['timezone']
+
             for idx in range(1, len(self.response)):
                 try:
                     data = self.response[idx]['data']
@@ -291,6 +287,6 @@ class ZentraReadings:
                         "pcpn": prec_readings[jdx]['value'],
                         "relh": relh_readings[jdx]['value']
                     }
-                    self.transformed_resp.append(temp_dic)
+                    self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
         # print(self.transformed_resp)
         return self
