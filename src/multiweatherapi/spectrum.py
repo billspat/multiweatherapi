@@ -294,7 +294,6 @@ class SpectrumReadings:
         self.transformed_resp = list()
         station_id = self.response[0]['station_id']
         request_datetime = self.response[0]['request_time']
-        resp_tz = self.response[0]['timezone']
 
         if self.response[0]['status_code'] == 200:
             for idx in range(1, len(self.response)):
@@ -307,9 +306,7 @@ class SpectrumReadings:
                     }
                     for kdx in range(len(sensor_data)):
                         if sensor_data[kdx]['SensorType'] == 'Temperature':
-                            temp_dict['data_datetime'] = \
-                                utilities.local_to_utc(sensor_data[kdx]['FormattedTimeStamp'], resp_tz, '%Y-%m-%d %H:%M'
-                                                       ).strftime('%Y-%m-%d %H:%M:%S')
+                            temp_dict['data_datetime'] = sensor_data[kdx]['FormattedTimeStamp']
                             temp_dict['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 1)
                             # print(temp_dict['atemp'])
                         if sensor_data[kdx]['SensorType'] == 'Rainfall':

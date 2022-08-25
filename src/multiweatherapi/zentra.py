@@ -268,7 +268,6 @@ class ZentraReadings:
         self.transformed_resp = list()
         station_id = self.response[0]['station_id']
         request_datetime = self.response[0]['request_time']
-        resp_tz = self.response[0]['timezone']
 
         if self.response[0]['status_code'] == 200:
             for idx in range(1, len(self.response)):
@@ -285,8 +284,7 @@ class ZentraReadings:
                     temp_dic = {
                         "station_id": station_id,
                         "request_datetime": request_datetime,
-                        "data_datetime": utilities.local_to_utc(temp_readings[jdx]['datetime'][:-6],
-                                                                resp_tz).strftime('%Y-%m-%d %H:%M:%S'),
+                        "data_datetime": temp_readings[jdx]['datetime'][:-6],
                         "atemp": temp_readings[jdx]['value'],
                         "pcpn": prec_readings[jdx]['value'],
                         "relh": relh_readings[jdx]['value']

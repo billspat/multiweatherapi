@@ -144,19 +144,3 @@ class Utilities:
             date = date.strftime('%Y-%m-%d %H:%M:%S')
 
         return date
-
-    def local_to_utc(input_datetime_str, local_timezone, input_datetime_format='%Y-%m-%d %H:%M:%S'):
-        tzlist = {
-            'HT': 'US/Hawaii',
-            'AT': 'US/Alaska',
-            'PT': 'US/Pacific',
-            'MT': 'US/Mountain',
-            'CT': 'US/Central',
-            'ET': 'US/Eastern'
-        }
-        input_datetime = datetime.strptime(input_datetime_str, input_datetime_format)
-        local = pytz.timezone(tzlist[local_timezone])
-        local_datetime = local.localize(input_datetime)
-        utc_datetime = local_datetime.astimezone(pytz.utc)
-
-        return utc_datetime
