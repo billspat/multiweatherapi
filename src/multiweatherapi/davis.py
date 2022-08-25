@@ -334,7 +334,10 @@ class DavisReadings:
             # return dt.strftime('%Y-%m-%d %H:%M:%S')
             return utc_dt.strftime('%Y-%m-%d %H:%M:%S')
 
-        self.transformed_resp = list()
+        self.transformed_resp = utilities.init_transformed_resp(
+            'davis',
+            utilities.local_to_utc(self.debug_info['start_datetime'], self.debug_info['tz']),
+            utilities.local_to_utc(self.debug_info['end_datetime'], self.debug_info['tz']))
 
         if self.response[0]['status_code'] == 200:
             station_id = self.response[0]['station_id']
@@ -355,6 +358,6 @@ class DavisReadings:
                                 "pcpn": data[kdx]['rainfall_mm'],
                                 "relh": data[kdx]['hum_out']
                             }
-                            self.transformed_resp.append(temp_dic)
+                            self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
         # print(self.transformed_resp)
         return self

@@ -14,18 +14,12 @@ class SpectrumParam:
         The serial number of the device
     apikey : str
         The customer's access key
-    start_datetime_org : datetime
-        Stores datetime object passed initially
     start_datetime : datetime
         Return readings for a specific customer device for a specific date-time range.
         (e.g., 2021-08-01 00:00)
-    end_datetime_org : datetime
-        Stores datetime object passed initially
     end_datetime : datetime
         Return readings for a specific customer device for a specific date-time range.
         (e.g., 2021-08-31 23:59)
-    date_org : datetime
-        Stores datetime object passed initially
     date : datetime
         Return readings for a specific date. (e.g., 2021-08-01)
     conversion_msg : str
@@ -43,11 +37,8 @@ class SpectrumParam:
                  json_file=None, binding_ver=None):
         self.sn = sn
         self.apikey = apikey
-        self.start_datetime_org = start_datetime
         self.start_datetime = start_datetime
-        self.end_datetime_org = end_datetime
         self.end_datetime = end_datetime
-        self.date_org = date
         self.date = date
         self.cur_datetime = datetime.now(timezone.utc)
         self.tz = tz
@@ -145,11 +136,8 @@ class SpectrumReadings:
         self.debug_info = {
             'sn': param.sn,
             'apikey': param.apikey,
-            'start_datetime_org': param.start_datetime_org,
             'start_datetime': param.start_datetime,
-            'end_datetime_org': param.end_datetime_org,
             'end_datetime': param.end_datetime,
-            'date_org': param.date_org,
             'date': param.date,
             'cur_datetime': param.cur_datetime.strftime('%Y-%m-%d %H:%M:%S'),
             'tz': param.tz,
@@ -291,31 +279,36 @@ class SpectrumReadings:
         """
         Parses the response.
         """
-        self.transformed_resp = list()
-        station_id = self.response[0]['station_id']
-        request_datetime = self.response[0]['request_time']
-        resp_tz = self.response[0]['timezone']
+        self.transformed_resp = utilities.init_transformed_resp(
+            'spectrum',
+            utilities.local_to_utc(self.debug_info['start_datetime'].strftime('%Y-%m-%d %H:%M:%S'), self.debug_info['tz']),
+            utilities.local_to_utc(self.debug_info['end_datetime'].strftime('%Y-%m-%d %H:%M:%S'), self.debug_info['tz']))
 
         if self.response[0]['status_code'] == 200:
+            station_id = self.response[0]['station_id']
+            request_datetime = self.response[0]['request_time']
+            resp_tz = self.response[0]['timezone']
+
             for idx in range(1, len(self.response)):
                 equipment_rec = self.response[idx]['EquipmentRecords']
                 for jdx in range(len(equipment_rec)):
                     sensor_data = equipment_rec[jdx]['SensorData']
-                    temp_dict = {
+                    temp_dic = {
                         "station_id": station_id,
                         "request_datetime": request_datetime,
                     }
                     for kdx in range(len(sensor_data)):
                         if sensor_data[kdx]['SensorType'] == 'Temperature':
-                            temp_dict['data_datetime'] = \
+                            temp_dic['data_datetime'] = \
                                 utilities.local_to_utc(sensor_data[kdx]['FormattedTimeStamp'], resp_tz, '%Y-%m-%d %H:%M'
                                                        ).strftime('%Y-%m-%d %H:%M:%S')
-                            temp_dict['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 1)
-                            # print(temp_dict['atemp'])
+                            temp_dic['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 1)
+                            # print(temp_dic['atemp'])
                         if sensor_data[kdx]['SensorType'] == 'Rainfall':
-                            temp_dict['pcpn'] = (float(sensor_data[kdx]['Value'])*25.4)
+                            temp_dic['pcpn'] = (float(sensor_data[kdx]['Value'])*25.4)
                         if sensor_data[kdx]['SensorType'] == 'Relative Humidity':
-                            temp_dict['relh'] = sensor_data[kdx]['Value']
-                    self.transformed_resp.append(temp_dict)
+                            temp_dic['relh'] = sensor_data[kdx]['Value']
+                    # self.transformed_resp.append(temp_dic)
+                    self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
         # print(self.transformed_resp)
         return self

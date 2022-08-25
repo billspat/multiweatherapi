@@ -19,12 +19,8 @@ class OnsetParam:
         The format data should be returned in. Currently only JSON is supported.
     user_id : str
         numeric ID of the user account This can be pulled from the HOBOlink URL: www.hobolink.com/users/<user_id>
-    start_datetime_org : datetime
-        Stores datetime object passed initially
     start_datetime : datetime
         Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
-    end_datetime_org : datetime
-        Stores datetime object passed initially
     end_datetime : datetime
         Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
     conversion_msg : str
@@ -45,9 +41,7 @@ class OnsetParam:
         self.ret_form = ret_form
         self.user_id = user_id
         self.path_param = None
-        self.start_datetime_org = start_datetime
         self.start_datetime = start_datetime
-        self.end_datetime_org = end_datetime
         self.end_datetime = end_datetime
         self.cur_datetime = datetime.now(timezone.utc)
         self.tz = tz
@@ -111,11 +105,7 @@ class OnsetParam:
         self.end_datetime = self.end_datetime.replace(tzinfo=timezone.utc) if self.end_datetime else None
         self.conversion_msg += 'Explicit UTC time end date after conversion: {}'.format(self.end_datetime) + " \\ "
         print('Explicit UTC time End date: {}'.format(self.end_datetime))
-        # for the metadata
-        self.start_datetime_org = \
-            self.start_datetime_org.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
-        self.end_datetime_org = \
-            self.end_datetime_org.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
+
         self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
     def __format_time(self):
@@ -127,8 +117,6 @@ class OnsetParam:
         self.end_datetime = self.end_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.end_datetime \
             else datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         # for metadata
-        self.start_datetime_org = self.start_datetime_org.strftime('%Y-%m-%d %H:%M:%S')
-        self.end_datetime_org = self.end_datetime_org.strftime('%Y-%m-%d %H:%M:%S')
         self.cur_datetime = self.cur_datetime.strftime('%Y-%m-%d %H:%M:%S')
 
     def __get_auth(self):
@@ -179,9 +167,7 @@ class OnsetReadings:
             'sn': param.sn,
             'access_token': param.access_token,
             'path_param': param.path_param,
-            'start_datetime_org': param.start_datetime_org,
             'start_datetime': param.start_datetime,
-            'end_datetime_org': param.end_datetime_org,
             'end_datetime': param.end_datetime,
             'cur_datetime': param.cur_datetime,
             'tz': param.tz,
@@ -272,8 +258,8 @@ class OnsetReadings:
             "vendor": "onset",
             "station_id": self.debug_info['sn'],
             "timezone": self.debug_info['tz'],
-            "start_datetime": self.debug_info['start_datetime_org'],
-            "end_datetime": self.debug_info['end_datetime_org'],
+            "start_datetime": self.debug_info['start_datetime'],
+            "end_datetime": self.debug_info['end_datetime'],
             "request_time": self.debug_info['cur_datetime'],
             "python_binding_version": self.debug_info['binding_ver']}
         self.response.append(metadata)
@@ -301,32 +287,35 @@ class OnsetReadings:
         """
         Parses the response.
         """
-        def search_timestamp(input_datetime):
-            if self.transformed_resp is None:
-                return None
-            if len(self.transformed_resp) == 0:
-                return -1
-            for x in range(len(self.transformed_resp)):
-                if input_datetime == self.transformed_resp[x]['data_datetime']:
-                    return x
-            return -1
+        # def search_timestamp(input_datetime):
+        #     if self.transformed_resp is None:
+        #         return None
+        #     if len(self.transformed_resp) == 0:
+        #         return -1
+        #     for x in range(len(self.transformed_resp)):
+        #         if input_datetime == self.transformed_resp[x]['data_datetime']:
+        #             return x
+        #     return -1
+        #
+        # def insert_resp(key, value, rec_datetime):
+        #     resp_index = search_timestamp(rec_datetime)
+        #     if resp_index is None:
+        #         raise Exception("transformed_resp is None")
+        #     elif resp_index == -1:
+        #         temp_dict = {
+        #             "station_id": station_id,
+        #             "request_datetime": request_datetime,
+        #             "data_datetime": data_datetime,
+        #             key: value
+        #         }
+        #         self.transformed_resp.append(temp_dict)
+        #     else:
+        #         self.transformed_resp[resp_index][key] = value
 
-        def insert_resp(key, value, rec_datetime):
-            resp_index = search_timestamp(rec_datetime)
-            if resp_index is None:
-                raise Exception("transformed_resp is None")
-            elif resp_index == -1:
-                temp_dict = {
-                    "station_id": station_id,
-                    "request_datetime": request_datetime,
-                    "data_datetime": data_datetime,
-                    key: value
-                }
-                self.transformed_resp.append(temp_dict)
-            else:
-                self.transformed_resp[resp_index][key] = value
-
-        self.transformed_resp = list()
+        self.transformed_resp = utilities.init_transformed_resp(
+            'onset',
+            datetime.strptime(self.debug_info['start_datetime'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc),
+            datetime.strptime(self.debug_info['end_datetime'], '%Y-%m-%d %H:%M:%S').replace(tzinfo=timezone.utc))
 
         if self.response[0]['status_code'] == 200:
             station_id = self.response[0]['station_id']
@@ -340,17 +329,29 @@ class OnsetReadings:
                     else:
                         data_datetime = observe_list[kdx]['timestamp']
 
+                    temp_dic = {
+                        "station_id": station_id,
+                        "request_datetime": request_datetime,
+                        "data_datetime": data_datetime,
+                        "atemp": None,
+                        "pcpn": None,
+                        "relh": None
+                    }
+
                     if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
                         atemp = round(float(observe_list[kdx]['si_value']), 1)
-                        insert_resp("atemp", atemp, data_datetime)
+                        temp_dic['atemp'] = atemp
+                        self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
 
                     if self.debug_info['sensor_sn']['pcpn'] == observe_list[kdx]['sensor_sn']:
                         pcpn = observe_list[kdx]['si_value']
-                        insert_resp("pcpn", pcpn, data_datetime)
+                        temp_dic['pcpn'] = pcpn
+                        self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
 
                     if self.debug_info['sensor_sn']['relh'] == observe_list[kdx]['sensor_sn']:
                         relh = observe_list[kdx]['us_value']
-                        insert_resp("relh", relh, data_datetime)
+                        temp_dic['relh'] = relh
+                        self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
 
         # print(self.transformed_resp)
         return self
