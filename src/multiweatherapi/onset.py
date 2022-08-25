@@ -334,18 +334,21 @@ class OnsetReadings:
             for idx in range(1, len(self.response)):
                 observe_list = self.response[idx]['observation_list']
                 for kdx in range(len(observe_list)):
-                    if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
+                    # extract timestamp in 'YYYY-MM-DD HH:MM:SS' format
+                    if observe_list[kdx]['timestamp'][-1].lower() == 'z':
+                        data_datetime = observe_list[kdx]['timestamp'][:-1]
+                    else:
                         data_datetime = observe_list[kdx]['timestamp']
+
+                    if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
                         atemp = round(float(observe_list[kdx]['si_value']), 1)
                         insert_resp("atemp", atemp, data_datetime)
 
                     if self.debug_info['sensor_sn']['pcpn'] == observe_list[kdx]['sensor_sn']:
-                        data_datetime = observe_list[kdx]['timestamp']
                         pcpn = observe_list[kdx]['si_value']
                         insert_resp("pcpn", pcpn, data_datetime)
 
                     if self.debug_info['sensor_sn']['relh'] == observe_list[kdx]['sensor_sn']:
-                        data_datetime = observe_list[kdx]['timestamp']
                         relh = observe_list[kdx]['us_value']
                         insert_resp("relh", relh, data_datetime)
 

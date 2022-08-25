@@ -329,12 +329,13 @@ class DavisReadings:
                 'ET': 'US/Eastern'
             }
             utc_dt = datetime.utcfromtimestamp(epoch).replace(tzinfo=pytz.utc)
-            tz = pytz.timezone(tzlist[time_zone])
-            dt = utc_dt.astimezone(tz)
-            return dt.strftime('%Y-%m-%d %H:%M:%S')
+            # tz = pytz.timezone(tzlist[time_zone])
+            # dt = utc_dt.astimezone(tz)
+            # return dt.strftime('%Y-%m-%d %H:%M:%S')
+            return utc_dt.strftime('%Y-%m-%d %H:%M:%S')
 
         self.transformed_resp = list()
-        
+
         if self.response[0]['status_code'] == 200:
             station_id = self.response[0]['station_id']
             request_datetime = self.response[0]['request_time']
