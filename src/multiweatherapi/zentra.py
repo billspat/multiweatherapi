@@ -6,6 +6,7 @@ import pytz
 from requests import Session, Request
 from .utilities import Utilities as utilities
 
+
 class ZentraParam:
     """
     A class used to represent Zentra API parameters
@@ -244,9 +245,9 @@ class ZentraReadings:
         if resp.status_code != 200:
             import pprint
             self.response[0]['status_code'] = resp.status_code
-            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'detail') 
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text), 'detail')
         elif str(resp.content) == str(b'{"Error": "Device serial number entered does not exist"}'):
-            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text),'detail') 
+            self.response[0]['error_msg'] = utilities.case_insensitive_key(json.loads(resp.text), 'detail')
         
         self.response.append(resp.json())
         self.response[0]['status_code'] = resp.status_code
@@ -257,6 +258,15 @@ class ZentraReadings:
         """
         Parses the response.
         """
+        def get_reading(data_list, list_index):
+            if data_list is None:
+                return None
+            try:
+                reading = data_list[list_index]['value']
+            except IndexError:
+                return None
+            return reading
+
         self.transformed_resp = utilities.init_transformed_resp(
             'zentra',
             utilities.local_to_utc(self.debug_info['start_datetime'], self.debug_info['tz'], '%m-%d-%Y %H:%M'),
@@ -283,9 +293,9 @@ class ZentraReadings:
                         "request_datetime": request_datetime,
                         "data_datetime": utilities.local_to_utc(temp_readings[jdx]['datetime'][:-6],
                                                                 resp_tz).strftime('%Y-%m-%d %H:%M:%S'),
-                        "atemp": temp_readings[jdx]['value'],
-                        "pcpn": prec_readings[jdx]['value'],
-                        "relh": relh_readings[jdx]['value']
+                        "atemp": get_reading(temp_readings, jdx),
+                        "pcpn": get_reading(prec_readings, jdx),
+                        "relh": get_reading(relh_readings, jdx),
                     }
                     self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
         # print(self.transformed_resp)
