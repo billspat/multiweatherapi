@@ -66,7 +66,7 @@ class ZentraParam:
         if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
             raise Exception('start_datetime must be earlier than end_datetime')
         if not self.json_file and not (self.start_datetime and self.end_datetime):
-            raise Exception('state_datetime and end_datetime must be specified')
+            raise Exception('start_datetime and end_datetime must be specified')
         if self.tz and (self.tz not in tz_option):
             raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
         if (self.start_datetime or self.end_datetime) and not self.tz:

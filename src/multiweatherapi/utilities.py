@@ -126,25 +126,27 @@ class Utilities:
 
     def set_date(date):
         """
-        Makes sure that the date is a string in the YYYY-MM-DD HH:MM:SS format.
+        This method will try to format the date that was sent to it.  If the date sent is invalid, return that so it will go into the
+        error log correctly.
 
         Parameters
         ----------
-        date : datetime or str
-               The date we wish to format.
-
+        date : str or datetime
+               The date to be set.
+              
         Returns
         -------
         date : str
-               The date as a string and formatted as YYYY-MM-DD HH:MM:SS.
-
+               The properly formatted date if the date is a proper date, the original value otherwise.      
         """
-                
-        from dateutil.parser import parse
+        from dateutil.parser import parse, ParserError
 
         if isinstance(date, str):
-            date = parse(date)
-            date = date.strftime('%Y-%m-%d %H:%M:%S')
+            try:
+                date = parse(date)
+                date = date.strftime('%Y-%m-%d %H:%M:%S')
+            except ParserError:
+                date = date
         elif isinstance(date, datetime):
             date = date.strftime('%Y-%m-%d %H:%M:%S')
 

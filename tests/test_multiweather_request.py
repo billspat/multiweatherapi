@@ -15,7 +15,7 @@ A set of test modules to test as many of the mwapi functions as possible.
 # for vendor fixture and dotenv, see conftest.py  
 def is_date(datestring):
     """
-    This method checks to see if a string passed to it is a valid date.
+    This helper method checks to see if a string passed to it is a valid date.
 
     Parameters
     ----------
@@ -37,7 +37,7 @@ def is_date(datestring):
 
 def is_number(string):
     """
-    This method checks to see if a string passed to it is a valid number.
+    This helper method checks to see if a string passed to it is a valid number.
 
     Parameters
     ----------
@@ -57,7 +57,7 @@ def is_number(string):
 
 def get_items(dictionary):
     """
-    This module returns the values of all the keys in a dictionary.
+    This helper method returns the values of all the keys in a dictionary.
 
     Parameters
     ----------
@@ -86,7 +86,7 @@ def expected_vendor_parms(vendor):
     vendor : str
              The vendor whose expected parameters we want to retrieve from the .env file.
 
-    Returns
+    Yields
     -------
     The expected parameters from the .env file.
     """
@@ -103,7 +103,7 @@ def static_datetimes():
     ----------
     None
 
-    Returns
+    Yields
     -------
     A start date of 2022-02-16 13:00:00 and an end date of 2022-02-16 14:30:00.
     """
@@ -119,7 +119,7 @@ def recent_datetimes():
     ----------
     None
 
-    Returns
+    Yields
     -------
     A start date of the current date/time minus two hours and an end date of the current date/time minus one hour.
     """
@@ -176,7 +176,8 @@ def api_request(vendor, params, scope="session"):
 
 def test_vendor_params(vendor, params, expected_vendor_parms):
     """
-    This test module will test that the vendor parameters stored in the .env file are not missing any required parameters.
+    This test module will test that mwapi correctly handles the situation where the vendor parameters stored in the .env file 
+    are missing any required parameters.
 
     Parameters
     ----------
@@ -271,7 +272,7 @@ def test_api_transform(vendor, params):
     vendor : str
              The vendor we are testing.
     params : vendor parameter object
-             The vendor parameter object, which contains the parameters to be passed to the vendor API.    
+             The vendor parameter object, which contains the parameters to be passed to the vendor API.
     """  
     readings = multiweatherapi.get_reading(vendor, **params)
     assert readings.resp_transformed is not None, 'multiweatherapi did not return any parsed readings...'
@@ -298,15 +299,16 @@ def test_api_transform(vendor, params):
         assert is_number(data['relh']) , 'Record #' + str(index) + ' relh entry *' + str(data['relh']) + '* is not a valid number...'
         index += 1  
 
-# The following tests are for Davis only because:
+# The following two tests are for Davis only because:
 #    - Davis can only return up to 24 hours worth of data at a time.
 #    - There was an error encountered when the start and end times were exactly 24 hours apart.
+#
 # The purpose of these tests are to make sure any changes to the multiweatherapi library doesn't break the code that
 # alleviates these problems.
 def test_Davis_exactly_24_Hours(vendor, params):
     """
-    The purpose of this test module is to make sure any changes to the multiweatherapi library doesn't break code necessary to 
-    handle the issues encountered with the Davis API when the start date and end date were exactly 24 hours apart.
+    The purpose of this test module is to make sure any changes to the multiweatherapi library don't break the code that 
+    handles the issues encountered with the Davis API when the start date and end date were exactly 24 hours apart.
 
     Parameters
     ----------
@@ -324,8 +326,8 @@ def test_Davis_exactly_24_Hours(vendor, params):
 
 def test_Davis_More_than_24_hours(vendor, params):
     """
-    The purpose of this test module is to make sure any changes to the multiweatherapi library doesn't break code necessary to 
-    handle the issues encountered with the Davis API when the requested date range was more than 24 hours.
+    The purpose of this test module is to make sure any changes to the multiweatherapi library don't break the code that 
+    handles the issues encountered with the Davis API when the requested date range was more than 24 hours.
 
     Parameters
     ----------
@@ -353,10 +355,9 @@ def test_Davis_More_than_24_hours(vendor, params):
 #         multiweatherapi.get_reading(vendor, **params)
 
 
-def test_bad_end_datetime_raises_exception(vendor, params):
+def test_bad_end_datetime(vendor, params):
     """
-    The purpose of this test module to to make sure any changes to the multiweatherapi library doesn't break code necessary to 
-    handle the issue encountered with the Davus API when the start date and end date were exactly 24 hours apart.
+    The purpose of this test module is to check to make sure mwapi properly handles bad end dates.
 
     Parameters
     ----------
@@ -365,34 +366,46 @@ def test_bad_end_datetime_raises_exception(vendor, params):
     params : vendor parameter object
              The vendor parameter object, which contains the parameteres to be passed to the vendor API.     
     """    
-    # break end date pram
-    params['end_datetime'] = ""
-    with pytest.raises(Exception) as error:
-        multiweatherapi.get_reading(vendor, **params)  
+    # Check empty date. 
+    # Note: this test commented out until issue #22 has been closed.
+    # gitlab URL: https://gitlab.msu.edu/adsdatascience/multiweatherapi/-/issues/22
+    # params['end_datetime'] = ""
+    # resp = multiweatherapi.get_reading(vendor, **params)  
+    # assert resp.resp_raw['error_msg'].__contains__('start_datetime and end_datetime must be specified'), 'End datetime of empty string not caught.'
 
     params['end_datetime'] = None
-    with pytest.raises(Exception) as error:
-        multiweatherapi.get_reading(vendor, **params)  
+    resp = multiweatherapi.get_reading(vendor, **params)  
+    assert resp.resp_raw['error_msg'].__contains__('start_datetime and end_datetime must be specified'), 'End datetime of None not caught.'
 
     params['end_datetime'] = 'This is a bad date'
-    with pytest.raises(Exception) as error:
-        multiweatherapi.get_reading(vendor, **params)  
+    resp = multiweatherapi.get_reading(vendor, **params)  
+    assert resp.resp_raw['error_msg'].__contains__('end_datetime must be datetime.datetime instance'), 'Non-date end date not caught.'
 
+def test_bad_start_datetime(vendor, params):
+    """
+    The purpose of this test module is to check to make sure mwapi properly handles bad start dates.
 
-
-def test_bad_start_datetime_raises_exception(vendor, params):
-    # break start datetime
-    params['start_datetime'] = ''
-    with pytest.raises(Exception) as error:
-        multiweatherapi.get_reading(vendor, **params)  
+    Parameters
+    ----------
+    vendor : str
+             The vendor we are testing.
+    params : vendor parameter object
+             The vendor parameter object, which contains the parameteres to be passed to the vendor API.     
+    """        
+    # Check empty date. 
+    # Note: this test commented out until issue #22 has been closed.
+    # params['start_datetime'] = ''
+    # resp = multiweatherapi.get_reading(vendor, **params)  
+    # assert resp.resp_raw['error_msg'].__contains__('start_datetime and end_datetime must be specified'), 'Start datetime of None not caught.'
 
     params['start_datetime'] = None
-    with pytest.raises(Exception) as error:
-        multiweatherapi.get_reading(vendor, **params)  
+    resp = multiweatherapi.get_reading(vendor, **params)  
+    assert resp.resp_raw['error_msg'].__contains__('start_datetime and end_datetime must be specified'), 'Start datetime of None not caught.'
 
-    params['start_date'] = 'This is a bad date'
-    with pytest.raises(Exception) as error:
-        multiweatherapi.get_reading(**params)  
+    params['start_datetime'] = 'This is a bad date'
+    resp = multiweatherapi.get_reading(vendor, **params)  
+    assert resp.resp_raw['error_msg'].__contains__('start_datetime must be datetime.datetime instance'), 'Non-date start date not caught.'
+ 
 
 
 # def test_bad_params(vendor, params):
@@ -447,26 +460,51 @@ def test_bad_start_datetime_raises_exception(vendor, params):
 
 #     assert '"station_id" and "access_token" parameters must both be included.' in str(error.value), 'multiweatherapi did not catch None as station_lid'
 
-def test_bad_username_raises_exception(vendor, params):
+def test_bad_username(vendor, params):
+    """
+    The purpose of this test is to make sure that mwapi handles missing usernames correctly.  This test is valid only for Campbell and
+    Rainwise stations.
+
+    Parameters
+    ----------
+    vendor : str
+             The vendor this test is being run on.
+    parms  : vendor parameter object
+             The parameters that will be sent to the vendor API.
+    """
     # Rainwise and Campbell are the only vendors at this point that have a username field.
     if vendor in ('RAINWISE', 'CAMPBELL'):  
-        params['username'] = '' # Note: This test doesn't work as mwapi doesn't check for the empty string, so an Exception isn't thrown.
-
-        with pytest.raises(Exception) as error:
-            multiweatherapi.get_reading(vendor, **params)
+        # Note: this test commented out until issue #22 has been closed.
+        # params['username'] = ''
+        # resp = multiweatherapi.get_reading(vendor, **params)
+        # assert resp.resp_raw['error_msg'].__contains__('username must be specified and only str type is supported')
 
         params['username'] = 6
-        with pytest.raises(Exception) as error:
-            multiweatherapi.get_reading(vendor, **params)
+        resp = multiweatherapi.get_reading(vendor, **params)
+        assert resp.resp_raw['error_msg'].__contains__('username must be specified and only str type is supported') or \
+               resp.resp_raw['error_msg'].__contains__('username and mac parameters must be included and same value'), \
+               'Incorrect username not caught.'
         
         params['username'] = None
-        with pytest.raises(Exception) as error:
-            multiweatherapi.get_reading(vendor, **params)
+        resp = multiweatherapi.get_reading(vendor, **params)
+        assert resp.resp_raw['error_msg'].__contains__('username must be specified and only str type is supported') or \
+               resp.resp_raw['error_msg'].__contains__('username and mac parameters must be included and same value'), \
+               'username of None not caught.'
 
 
-def test_start_date_after_end_date_raises_exception(params):
+def test_start_date_after_end_date(vendor, params):
+    """
+    The purpose of this test method is to ensure that if the start date is after the end date, the appropriate error message is 
+    placed in the error_msg dictionary entry of resp_raw.
+
+    Parameters
+    ----------
+    params : vendor parameter object
+             The parameters that are passed to the vendor API.
+    """
     # swap times 
     params['start_datetime'], params['end_datetime'] = params['end_datetime'], params['start_datetime']
 
-    with pytest.raises(Exception) as error:
-        multiweatherapi.get_reading(vendor, **params)    
+    resp = multiweatherapi.get_reading(vendor, **params)
+    assert resp.resp_raw['error_msg'].__contains__('start_datetime must be earlier than end_datetime'), \
+           'mwapi did not catch that the start date came after the end date'
