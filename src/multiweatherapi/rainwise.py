@@ -7,6 +7,7 @@ from .utilities import Utilities as utilities
 class RainwiseParam:
     """
     A class used to represent Rainwise API parameters
+    
     Attributes
     ----------
     username : str
@@ -52,6 +53,11 @@ class RainwiseParam:
         self.binding_ver = binding_ver
 
     def _process(self):
+        """ 
+        This method does the following:
+        - Checks to make sure all the parameters are present and are of the correct type.
+        - Formats dates to local time.
+        """           
         self.__check_params()
         self.__format_time()
 
@@ -121,6 +127,7 @@ class RainwiseParam:
 class RainwiseReadings:
     """
     A class used to represent a device's readings
+
     Attributes
     ----------
     request : Request
@@ -156,6 +163,12 @@ class RainwiseReadings:
         }
 
     def _process(self, param: RainwiseParam):
+        """ 
+        This method does the following:
+        - Checks to make sure that the username, sid, pid, and mac parameters are present.
+        - If there is a local JSON file to transform, then do so.
+        - Gets the readings from the vendor API.
+        """        
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()

@@ -10,6 +10,7 @@ from .utilities import Utilities as utilities
 class ZentraParam:
     """
     A class used to represent Zentra API parameters
+
     Attributes
     ----------
     sn : str
@@ -48,6 +49,11 @@ class ZentraParam:
         self.binding_ver = binding_ver
 
     def _process(self):
+        """ 
+        This method does the following:
+        - Checks to make sure all the parameters are present and are of the correct type.
+        - Formats dates to local time.
+        """           
         self.__check_params()
         self.__format_time()
 
@@ -107,6 +113,7 @@ class ZentraParam:
 class ZentraReadings:
     """
     A class used to represent a device's readings
+    
     Attributes
     ----------
     request : Request
@@ -142,6 +149,12 @@ class ZentraReadings:
         }
 
     def _process(self, param: ZentraParam):
+        """ 
+        This method does the following:
+        - Checks to make sure that the sn and token parameters are both present.
+        - If there is a local JSON file to transform, then do so.
+        - Gets the readings from the vendor API.
+        """        
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()

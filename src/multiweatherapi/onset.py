@@ -7,6 +7,7 @@ from .utilities import Utilities as utilities
 class OnsetParam:
     """
     A class used to represent Onset API parameters
+
     Attributes
     ----------
     sn : str
@@ -51,6 +52,12 @@ class OnsetParam:
         self.binding_ver = binding_ver
 
     def _process(self):
+        """ 
+        This method does the following:
+        - Checks to make sure all the parameters are present and are of the correct type.
+        - Formats dates to local time.
+        - Gets authorization from the Onset API.
+        """           
         self.__check_params()
         self.__format_time()
         self.__get_auth()
@@ -143,6 +150,7 @@ class OnsetParam:
 class OnsetReadings:
     """
     A class used to represent a device's readings
+    
     Attributes
     ----------
     request : Request
@@ -178,6 +186,12 @@ class OnsetReadings:
         }
 
     def _process(self, param: OnsetParam):
+        """ 
+        This method does the following:
+        - Checks to make sure that the sn and access_token parameters are both present.
+        - If there is a local JSON file to transform, then do so.
+        - Gets the readings from the vendor API.
+        """       
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()
