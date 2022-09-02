@@ -100,7 +100,7 @@ class CampbellParam:
         if self.start_datetime and self.end_datetime and (self.start_datetime > self.end_datetime):
             raise Exception('start_datetime must be earlier than end_datetime')
         if not self.json_file and not (self.start_datetime and self.end_datetime):
-            raise Exception('state_datetime and end_datetime must be specified')
+            raise Exception('start_datetime and end_datetime must be specified')
         print("user credentials: {} type - {}".format(type(self.credentials), self.credentials))
 
     def __utc_to_local(self):

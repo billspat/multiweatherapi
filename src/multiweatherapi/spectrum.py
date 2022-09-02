@@ -68,7 +68,7 @@ class SpectrumParam:
         if self.date and not isinstance(self.date, datetime):
             raise Exception('date must be datetime.datetime instance')
         if not self.json_file and not self.date and not (self.start_datetime and self.end_datetime):
-            raise Exception('date or state_datetime and end_datetime must be specified')
+            raise Exception('date or start_datetime and end_datetime must be specified')
         if self.tz and (self.tz not in tz_option):
             raise Exception('time zone options: HT, AT, PT, MT, CT, ET')
         if (self.start_datetime or self.end_datetime or self.date) and not self.tz:
