@@ -10,6 +10,7 @@ from .utilities import Utilities as utilities
 class DavisParam:
     """
     A class used to represent Davis API parameters
+
     Attributes
     ----------
     sn : str
@@ -51,6 +52,12 @@ class DavisParam:
         self.binding_ver = binding_ver
 
     def _process(self):
+        """ 
+        This method does the following:
+        - Checks to make sure all the parameters are present and are of the correct type.
+        - Formats dates to local time.
+        - Creates the API signature used to call the Davis API.
+        """        
         self.__check_params()
         self.__format_time()
 
@@ -172,6 +179,7 @@ class DavisParam:
 class DavisReadings:
     """
     A class used to represent a device's readings
+    
     Attributes
     ----------
     request : list
@@ -209,6 +217,12 @@ class DavisReadings:
         self.response = list()
 
     def _process(self, param: DavisParam):
+        """ 
+        This method does the following:
+        - Checks to make sure that the sn and apikey parameters are both present.
+        - If there is a local JSON file to transform, then do so.
+        - Gets the readings from the vendor API.
+        """      
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()

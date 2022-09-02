@@ -8,6 +8,7 @@ from .utilities import Utilities as utilities
 class SpectrumParam:
     """
     A class used to represent Spectrum API parameters
+
     Attributes
     ----------
     sn : str
@@ -48,6 +49,11 @@ class SpectrumParam:
         self.binding_ver = binding_ver
 
     def _process(self):
+        """ 
+        This method does the following:
+        - Checks to make sure all the parameters are present and are of the correct type.
+        - Formats dates to local time.
+        """           
         self.__check_params()
         self.__utc_to_local()
 
@@ -113,6 +119,7 @@ class SpectrumParam:
 class SpectrumReadings:
     """
     A class used to represent a device's readings
+    
     Attributes
     ----------
     request : Request
@@ -148,6 +155,12 @@ class SpectrumReadings:
         }
 
     def _process(self, param: SpectrumParam):
+        """ 
+        This method does the following:
+        - Checks to make sure that the sn and apikey parameters are both present.
+        - If there is a local JSON file to transform, then do so.
+        - Gets the readings from the vendor API.
+        """        
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()

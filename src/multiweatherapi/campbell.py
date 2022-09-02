@@ -8,6 +8,7 @@ from .utilities import Utilities as utilities
 class CampbellParam:
     """
     A class used to represent Campbell API parameters
+
     Attributes
     ----------
     username : str
@@ -43,6 +44,7 @@ class CampbellParam:
     binding_ver : str
         Python binding version
     """
+
     def __init__(self, username=None, user_passwd=None, station_id=None, station_lid=None,
                  start_datetime=None, end_datetime=None, tz=None, json_file=None, binding_ver=None):
 
@@ -67,7 +69,14 @@ class CampbellParam:
         self.binding_ver = binding_ver
 
     def _process(self):
-        """ This method makes the calls that the __init__ method used to. """
+        """ 
+        This method does the following:
+        - Checks to make sure all the parameters are present and are of the correct type.
+        - Formats dates to local time.
+        - Gets authorization from the Campbell API.
+        - Gets the IDs from the Campbell API.
+        - Gets the available measurements from the Campbell API.
+        """
         self.__check_params()
         self.__format_time()
         self.__get_auth()
@@ -197,6 +206,7 @@ class CampbellParam:
 class CampbellReadings:
     """
     A class used to represent a device's readings
+    
     Attributes
     ----------
     request : Request
@@ -233,7 +243,12 @@ class CampbellReadings:
         }
 
     def _process(self, param: CampbellParam):
-        """ This calls the methods that __init__ used to. """
+        """ 
+        This method does the following:
+        - Checks to make sure that the station_lid and access_token parameters are both present.
+        - If there is a local JSON file to transform, then do so.
+        - Gets the readings from the vendor API.
+        """
         if param.json_file:
             self.response = json.load(open(param.json_file))
             self.__transform()
