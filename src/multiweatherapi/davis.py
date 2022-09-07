@@ -368,9 +368,9 @@ class DavisReadings:
                                 "station_id": station_id,
                                 "request_datetime": request_datetime,
                                 "data_datetime": epoch_converter(data[kdx]['ts'], self.response[0]['timezone']),
-                                "atemp": round(((float(data[kdx]['temp_out']) - 32) * 5 / 9), 1),
-                                "pcpn": data[kdx]['rainfall_mm'],
-                                "relh": data[kdx]['hum_out']
+                                "atemp": round(((float(data[kdx]['temp_out']) - 32) * 5 / 9), 2),
+                                "pcpn": round(float(data[kdx]['rainfall_mm']), 2),
+                                "relh": round(float(data[kdx]['hum_out']), 2)
                             }
                             self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
         # print(self.transformed_resp)

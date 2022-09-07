@@ -353,17 +353,17 @@ class OnsetReadings:
                     }
 
                     if self.debug_info['sensor_sn']['atemp'] == observe_list[kdx]['sensor_sn']:
-                        atemp = round(float(observe_list[kdx]['si_value']), 1)
+                        atemp = round(float(observe_list[kdx]['si_value']), 2)
                         temp_dic['atemp'] = atemp
                         self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
 
                     if self.debug_info['sensor_sn']['pcpn'] == observe_list[kdx]['sensor_sn']:
-                        pcpn = observe_list[kdx]['si_value']
+                        pcpn = round(float(observe_list[kdx]['si_value']), 2)
                         temp_dic['pcpn'] = pcpn
                         self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
 
                     if self.debug_info['sensor_sn']['relh'] == observe_list[kdx]['sensor_sn']:
-                        relh = observe_list[kdx]['us_value']
+                        relh = round(float(observe_list[kdx]['us_value']), 2)
                         temp_dic['relh'] = relh
                         self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
 

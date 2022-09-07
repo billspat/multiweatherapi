@@ -302,9 +302,9 @@ class RainwiseReadings:
                     "station_id": station_id,
                     "request_datetime": request_datetime,
                     "data_datetime": utilities.local_to_utc(v, resp_timezone).strftime('%Y-%m-%d %H:%M:%S'),
-                    "atemp": round(((float(self.response[idx]['temp'][k]) - 32) * 5 / 9), 1),
-                    "pcpn": (float(self.response[idx]['precip'][k])*25.4),
-                    "relh": self.response[idx]['hum'][k]
+                    "atemp": round(((float(self.response[idx]['temp'][k]) - 32) * 5 / 9), 2),
+                    "pcpn": round((float(self.response[idx]['precip'][k])*25.4), 2),
+                    "relh": round(float(self.response[idx]['hum'][k]), 2)
                 }
                 self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
         # print(self.transformed_resp)

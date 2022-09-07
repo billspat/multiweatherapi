@@ -275,7 +275,7 @@ class ZentraReadings:
             if data_list is None:
                 return None
             try:
-                reading = data_list[list_index]['value']
+                reading = round(float(data_list[list_index]['value']), 2)
             except IndexError:
                 return None
             return reading
