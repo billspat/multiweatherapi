@@ -315,12 +315,12 @@ class SpectrumReadings:
                             temp_dic['data_datetime'] = \
                                 utilities.local_to_utc(sensor_data[kdx]['FormattedTimeStamp'], resp_tz, '%Y-%m-%d %H:%M'
                                                        ).strftime('%Y-%m-%d %H:%M:%S')
-                            temp_dic['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 1)
+                            temp_dic['atemp'] = round(((float(sensor_data[kdx]['Value'])-32)*5/9), 2)
                             # print(temp_dic['atemp'])
                         if sensor_data[kdx]['SensorType'] == 'Rainfall':
-                            temp_dic['pcpn'] = (float(sensor_data[kdx]['Value'])*25.4)
+                            temp_dic['pcpn'] = round((float(sensor_data[kdx]['Value'])*25.4), 2)
                         if sensor_data[kdx]['SensorType'] == 'Relative Humidity':
-                            temp_dic['relh'] = sensor_data[kdx]['Value']
+                            temp_dic['relh'] = round(float(sensor_data[kdx]['Value']), 2)
                     # self.transformed_resp.append(temp_dic)
                     self.transformed_resp = utilities.insert_resp(self.transformed_resp, temp_dic)
         # print(self.transformed_resp)
