@@ -364,7 +364,6 @@ def test_for_missing_parameters(vendor, params):
     status_code_fail = ''
     error_msg_fail = ''
     valid_codes = ['400']
-    
 
     for key in params:
         temp = params.copy()
@@ -387,7 +386,7 @@ def test_for_bad_parameters(vendor, params):
     result is that mwapi catches all instances and places a status_code of 400 in the status_code field of resp_raw and an error message 
     in the error_msg field of resp_raw for each bad parameter in each test.
     Example:
-       If the parms were A, B, and C, the tests would be as follows: [bad date, B, C], [A, bad data, C], [A, B, bad data]
+       If the parms were A, B, and C, the tests would be as follows: [bad data, B, C], [A, bad data, C], [A, B, bad data]
 
     Parameters
     ----------
@@ -402,22 +401,20 @@ def test_for_bad_parameters(vendor, params):
     valid_codes = ['400', '401', '403', '404']
 
     for key in params:
-        temp = params.copy()
-        temp[key] = 'bad_data'
-        results = multiweatherapi.get_reading(vendor, **temp)
+        # If this is a Spectum station and the parameter to be set to bad data is 'sn', then skip as Spectrum stations
+        # return empty data if the serial number and en error code of 200 (OK) if invalid instead of an error message, so it would 
+        # always fail this test, which looks for 400, 401, 404, and 404.
 
-        # print('Status code:    ' + str(results.resp_raw['status_code']) + '\nError message: ' + results.resp_raw['error_msg'])
-        # print('Status code is of type ' + str(type(results.resp_raw['status_code'])))
-        # print('str of status code = *' + str(results.resp_raw['status_code']) + '*')
-        # print("str(results.resp_raw[\'status_code\']) != \'400\' is " + str(str(results.resp_raw['status_code']) != '400'))
-        # print("str(results.resp_raw[\'status_code\']) != \'401\' is " + str(str(results.resp_raw['status_code']) != '401'))
-        # print("str(results.resp_raw[\'status_code\']) != \'404\' is " + str(str(results.resp_raw['status_code']) != '404'))
+        if not (key == 'sn' and vendor == 'SPECTRUM'):
+            temp = params.copy()
+            temp[key] = 'bad_data'
+            results = multiweatherapi.get_reading(vendor, **temp)
 
-        if str(results.resp_raw['status_code']) not in valid_codes:
-            status_code_fail += '[' + key + '-' + str(results.resp_raw['status_code']) + '] '
+            if str(results.resp_raw['status_code']) not in valid_codes:
+                status_code_fail += '[' + key + '-' + str(results.resp_raw['status_code']) + '] '
 
-        if results.resp_raw['error_msg'] == '' and results.resp_raw:
-            error_msg_fail += key + ' - '
+            if results.resp_raw['error_msg'] == '' and results.resp_raw:
+                error_msg_fail += key + ' - '
 
     assert status_code_fail == '', 'multiweatherapi failed to set status code when setting bad values for parameters - ' + status_code_fail
 
