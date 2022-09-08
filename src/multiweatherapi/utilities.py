@@ -152,6 +152,26 @@ class Utilities:
 
         return date
 
+    def check_empty_str(input_param: dict):
+        """
+        Raises exception if any of the parameters are submitted with empty string.
+
+        This method is implemented to prevent unexpected behaviors of weather station API when empty string
+        is passed to one or more parameters. This method iterates all key value pairs in the parameter dictionary
+        and if it encounters any empty string variable, it will raise exception.
+        This method is called in the multiweatherapi.py right after Param object for specific vendor is
+        instantiated. This decision is made to rely on Mike's error handling routine to catch the exception
+        raised from this method and generate output response properly
+
+        Parameters
+        ----------
+        input_param : dict
+                      A dictionary of parameters.
+        """
+        for k, v in input_param.items():
+            if v == '':
+                raise Exception("{} parameter submitted with Empty String value".format(k))
+
     def local_to_utc(input_datetime_str: str, local_timezone, input_datetime_format='%Y-%m-%d %H:%M:%S'):
         tzlist = {
             'HT': 'US/Hawaii',
