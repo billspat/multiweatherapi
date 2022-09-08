@@ -39,6 +39,7 @@ class ApiWrapper:
                                     end_mrid=self.params.get('end_mrid', None),
                                     tz=self.params.get('tz', None),
                                     binding_ver=__version__)
+                Utilities.check_empty_str(self.params)
                 zparam._process()
                 zreadings = ZentraReadings(zparam)
                 zreadings._process(zparam)
@@ -61,6 +62,7 @@ class ApiWrapper:
                                     end_datetime=self.params.get('end_datetime', None),
                                     tz=self.params.get('tz', None),
                                     binding_ver=__version__)
+                Utilities.check_empty_str(self.params)
                 dparam._process()
                 dreadings = DavisReadings(dparam)
                 dreadings._process(dparam)
@@ -83,6 +85,7 @@ class ApiWrapper:
                                     tz=self.params.get('tz', None),
                                     count=self.params.get('count', None),
                                     binding_ver=__version__)
+                Utilities.check_empty_str(self.params)
                 sparam._process()
                 sreadings = SpectrumReadings(sparam)
                 sreadings._process(sparam)
@@ -107,6 +110,7 @@ class ApiWrapper:
                                     tz=self.params.get('tz', None),
                                     sensor_sn=self.params.get('sensor_sn', None),
                                     binding_ver=__version__)
+                Utilities.check_empty_str(self.params)
                 oparam._process()                                
                 oreadings = OnsetReadings(oparam)
                 oreadings._process(oparam)
@@ -131,6 +135,7 @@ class ApiWrapper:
                                     end_datetime=self.params.get('end_datetime', None),
                                     tz=self.params.get('tz', None),
                                     binding_ver=__version__)
+                Utilities.check_empty_str(self.params)
                 rparam._process()    
                 rreadings = RainwiseReadings(rparam)
                 rreadings._process(rparam)
@@ -153,6 +158,7 @@ class ApiWrapper:
                                     end_datetime=self.params.get('end_datetime', None),
                                     tz=self.params.get('tz', None),
                                     binding_ver=__version__)
+                Utilities.check_empty_str(self.params)
                 cparam._process()                                    
                 creadings = CampbellReadings(cparam)
                 creadings._process(cparam)
