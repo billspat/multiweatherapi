@@ -345,6 +345,83 @@ def test_Davis_More_than_24_hours(vendor, params):
 
 
 ###### tests for bad input handling
+def test_for_missing_parameters(vendor, params):
+    """
+    This test module will go through all the parameters that are passed to it and remove them one at a time.  The expected result is that
+    mwapi catches all instances and places a status_code of 400 in the status_code field of resp_raw and an error message in the
+    error_msg field of resp_raw for each missing parameter in each test.
+    Example:
+       If the parms were A, B, and C, the tests would be as follows: [B, C], [A, C], [A, B]
+
+    Parameters
+    ----------
+    vendor : str
+             The name of the vendor API being tested.
+    params : vendor parameter object
+             A dictionary of parameters expected by the vendor API
+    """
+
+    status_code_fail = ''
+    error_msg_fail = ''
+    valid_codes = ['400']
+    
+
+    for key in params:
+        temp = params.copy()
+        temp.pop(key)
+        results = multiweatherapi.get_reading(vendor, **temp)
+        
+        if str(results.resp_raw['status_code']) not in valid_codes:
+            status_code_fail += '[' + key + '-' + str(results.resp_raw['status_code']) + '] ' 
+
+        if results.resp_raw['error_msg'] == '':
+            error_msg_fail += key + ' - '
+
+    assert status_code_fail == '', 'multiweatherapi failed to set status code for these missing parameters - ' + status_code_fail
+
+    assert error_msg_fail == '', 'multiweatherapi failed to set error message for these missing parameters - ' + status_code_fail
+
+def test_for_bad_parameters(vendor, params):
+    """
+    This test module will go through all the parameters that are passed to it and one at a time, replace them with bad data. The expected 
+    result is that mwapi catches all instances and places a status_code of 400 in the status_code field of resp_raw and an error message 
+    in the error_msg field of resp_raw for each bad parameter in each test.
+    Example:
+       If the parms were A, B, and C, the tests would be as follows: [bad date, B, C], [A, bad data, C], [A, B, bad data]
+
+    Parameters
+    ----------
+    vendor : str
+             The name of the vendor API being tested.
+    params : vendor parameter object
+             A dictionary of parameters expected by the vendor API
+    """
+
+    status_code_fail = ''
+    error_msg_fail = ''
+    valid_codes = ['400', '401', '403', '404']
+
+    for key in params:
+        temp = params.copy()
+        temp[key] = 'bad_data'
+        results = multiweatherapi.get_reading(vendor, **temp)
+
+        # print('Status code:    ' + str(results.resp_raw['status_code']) + '\nError message: ' + results.resp_raw['error_msg'])
+        # print('Status code is of type ' + str(type(results.resp_raw['status_code'])))
+        # print('str of status code = *' + str(results.resp_raw['status_code']) + '*')
+        # print("str(results.resp_raw[\'status_code\']) != \'400\' is " + str(str(results.resp_raw['status_code']) != '400'))
+        # print("str(results.resp_raw[\'status_code\']) != \'401\' is " + str(str(results.resp_raw['status_code']) != '401'))
+        # print("str(results.resp_raw[\'status_code\']) != \'404\' is " + str(str(results.resp_raw['status_code']) != '404'))
+
+        if str(results.resp_raw['status_code']) not in valid_codes:
+            status_code_fail += '[' + key + '-' + str(results.resp_raw['status_code']) + '] '
+
+        if results.resp_raw['error_msg'] == '' and results.resp_raw:
+            error_msg_fail += key + ' - '
+
+    assert status_code_fail == '', 'multiweatherapi failed to set status code when setting bad values for parameters - ' + status_code_fail
+
+    assert error_msg_fail == '', 'multiweatherapi failed to set error message when setting bad values for parameters - ' + status_code_fail
 
 # def test_bad_auth(vendor, params):
 #     first_param = list(params.keys())[0]
