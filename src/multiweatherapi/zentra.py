@@ -280,6 +280,34 @@ class ZentraReadings:
                 return None
             return reading
 
+        def get_measurement_list(data_list, measure_label):
+            """
+            Takes a data list (JSON) object and extract measurement list of interest.
+
+            This inner method can be consolidated with get_reading above by checking 2nd element type
+            (e.g., if type is string consider it as label and fetch list, else type is integer then fetch value)
+
+            Parameters
+            ----------
+            data_list       : dict (JSON)
+                              The original resp_raw object.
+            measure_label   : str
+                              Measurement label of interest
+
+            Returns
+            -------
+            measurement_list : dict (JSON)
+                               Returns measurement list of interest.
+            """
+            if data_list is None:
+                return None
+            try:
+                measure_list = data_list[measure_label][0]['readings']
+            except (KeyError, TypeError):
+                print('KeyError or TypeError occurred while fetching measurement list for {}'.format(measure_label))
+                measure_list = None
+            return measure_list
+
         self.transformed_resp = utilities.init_transformed_resp(
             'zentra',
             utilities.local_to_utc(self.debug_info['start_datetime'], self.debug_info['tz'], '%m-%d-%Y %H:%M'),
@@ -293,13 +321,14 @@ class ZentraReadings:
             for idx in range(1, len(self.response)):
                 try:
                     data = self.response[idx]['data']
-                    temp_readings = data['Air Temperature'][0]["readings"]
-                    prec_readings = data['Precipitation'][0]["readings"]
-                    relh_readings = data['Relative Humidity'][0]["readings"]
-                except KeyError:
-                    print("KeyError occurred check RAW JSON API")
+                except (KeyError, TypeError):
+                    print("KeyError or TypeError occurred check RAW JSON API")
                     self.transformed_resp = list()
                     return self
+                temp_readings = get_measurement_list(data, 'Air Temperature')
+                prec_readings = get_measurement_list(data, 'Precipitation')
+                relh_readings = get_measurement_list(data, 'Relative Humidity')
+
                 for jdx in range(len(temp_readings)):
                     temp_dic = {
                         "station_id": station_id,
