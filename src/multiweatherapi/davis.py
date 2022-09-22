@@ -34,6 +34,28 @@ class DavisParam:
     """
     def __init__(self, sn=None, apikey=None, apisec=None, start_datetime=None, end_datetime=None, tz=None,
                  json_file=None, binding_ver=None):
+        """
+        This method will initialize a DavisParam object.
+
+        Parameters
+        ----------
+        sn             : str
+                         The station identifier.  Defaults to None.
+        apikey         : str
+                         The user's API access key.  Defaults to None. 
+        apisec         : str
+                         API security that is used to compute the hash.  Defaults to None. 
+        start_datetime : datetime
+                         The start date of the period being pulled from the API.  Defaults to None. 
+        end_datetime   : datetime
+                         The end date of the period being pulled from the API.  Defaults to None. 
+        tz             : str
+                         The time zone.  Defaults to None.
+        json_file      : str
+                         The path to a local json file to parse.  Defaults to None. 
+        binding_ver    : str
+                         The python binding version number.  Defaults to None.
+        """
         self.sn = sn
         self.apikey = apikey
         self.apisec = apisec
@@ -65,6 +87,15 @@ class DavisParam:
             self.__compute_signature()
 
     def __check_params(self):
+        """
+        This module is called by _process and checks that all the parameters that go to the API are present and of the
+        correct data type.
+
+        Raises
+        ------
+        Exception
+            If any parameter is missing or of an incorrect data type.
+        """
         if self.start_datetime and not isinstance(self.start_datetime, datetime):
             raise Exception('start_datetime must be datetime.datetime instance')
         if self.end_datetime and not isinstance(self.end_datetime, datetime):
@@ -96,6 +127,9 @@ class DavisParam:
                 print(elem)
 
     def __utc_to_local(self):
+        """
+        This method converts a datetime object from UTC to the local time zone.
+        """
         tzlist = {
             'HT': 'US/Hawaii',
             'AT': 'US/Alaska',
@@ -123,6 +157,9 @@ class DavisParam:
         self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
     def __format_time(self):
+        """
+        This method makes sure that a datetime object is in the format "YYYY-MM-DD HH:MM:SS".
+        """
         # this part is for the metadata purposes
         self.__utc_to_local()
         self.start_datetime = self.start_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.start_datetime else None
@@ -139,8 +176,18 @@ class DavisParam:
             self.date_tuple_list = temp_list
 
     def __compute_signature(self):
-
+        """
+        This method computes the API signature used to call the Davis API via the nested function compute_signature_engine.
+        """
         def compute_signature_engine():  # compute_engine
+            """
+            This method computes the API signature used to call the Daivs API.
+
+            Returns
+            -------
+            sig : HMAC
+                  A hash based message authentication code. 
+            """
             for key in params:
                 print("Parameter name: \"{}\" has value \"{}\"".format(key, params[key]))
 
@@ -193,7 +240,8 @@ class DavisReadings:
     """
     def __init__(self, param: DavisParam):
         """
-        Gets a device readings using a GET request to the Davis API.
+        This method initalizes a DavisReadings object.
+
         Parameters
         ----------
         param : DavisParam
@@ -222,6 +270,11 @@ class DavisReadings:
         - Checks to make sure that the sn and apikey parameters are both present.
         - If there is a local JSON file to transform, then do so.
         - Gets the readings from the vendor API.
+
+        Raises
+        ------
+        Exception
+           When the sn or apikey parameters are missing.
         """      
         if param.json_file:
             self.response = json.load(open(param.json_file))
@@ -243,8 +296,11 @@ class DavisReadings:
 
     def __get(self, sn, apikey, apisig, date_tuple_list, t):
         """
-        Gets a device readings using a GET request to the Davis API.
-        Wraps build and parse functions.
+        Gets device readings from the Davis API via these steps:
+        1. Call __build to build the request.
+        2. Call __make_request to make the actual API call.
+        3. Call __transform to transform the API response into JSON.
+
         Parameters
         ----------
         sn : str
@@ -256,7 +312,11 @@ class DavisReadings:
         date_tuple_list : list
             A list of date/time tuples with API signatures
         t : int
-            Unix timestamp when the query is submitted
+            Unix timestamp when the query is submitted       
+
+        Returns
+        -------
+        A DavisReadings object.   
         """
         self.__build(sn, apikey, apisig, date_tuple_list, t)
         self.__make_request()
@@ -265,7 +325,8 @@ class DavisReadings:
 
     def __build(self, sn, apikey, apisig, date_tuple_list: list, t):
         """
-        Gets a device readings using a GET request to the Davis API.
+        Gets a device's readings using a GET request to the Davis API.
+
         Parameters
         ----------
         sn : str
@@ -278,6 +339,10 @@ class DavisReadings:
             A list of date/time tuples with API signatures
         t : int
             Unix timestamp when the query is submitted
+
+        Returns
+        -------
+        A DavisReadings object.
         """
         if len(date_tuple_list) != 0:
             for st, ed, sig in date_tuple_list:
@@ -304,6 +369,10 @@ class DavisReadings:
     def __make_request(self):
         """
         Sends a token request to the Davis API and stores the response.
+
+        Returns
+        -------
+        A DavisReadings object.        
         """
         # prep response list
         metadata = {
@@ -331,9 +400,25 @@ class DavisReadings:
 
     def __transform(self):
         """
-        Transform the response.
+        Transform the response into JSON and store it.
+
+        Returns
+        -------
+        A DavisReadings object.        
         """
         def epoch_converter(epoch, time_zone):
+            """
+            This method converts from an epoch to a datetime object.
+
+            Parameters
+            ----------
+            epoch : Any
+                    The time in UNIX time (the number of seconds since 1 January 1970)
+
+            Returns
+            -------
+            The epoch time expressed as a datetime object.
+            """
             tzlist = {
                 'HT': 'US/Hawaii',
                 'AT': 'US/Alaska',
