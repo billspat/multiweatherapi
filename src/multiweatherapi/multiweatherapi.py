@@ -12,7 +12,19 @@ __version__ = '0.0.25'
 
 
 class ApiWrapper:
+    """
+    This class is a wrapper for all the various vendor API classes that make up MWAPI.
+    """
     def __init__(self, params: dict):
+        """
+        This module initializes an ApiWrapper object.
+
+        Parameters
+        ----------
+        params : dict
+                 The parameters that will be sent to the vendor API.
+        """
+        
         self.vendor_list = ['zentra', 'spectrum', 'davis', 'onset', 'rainwise', 'campbell']
         self.vendor = params.get('vendor', None)
         self.params = params
@@ -23,12 +35,35 @@ class ApiWrapper:
         self.check_params()
 
     def check_params(self):
+        """
+        This module checks to see if the vendor is specified in the parmeter dictionary and is in the list of approved vendors.
+
+        Raises
+        ------
+        Exception
+           If the vendor is non-existent or is not in the list of approved vendors.
+        """
+
         if self.vendor is None or self.vendor.lower() not in self.vendor_list:
             raise Exception('"vendor" must be specified and in the approved vendor list.')
         else:
             self.vendor = self.vendor.lower()
 
     def get_reading(self):
+        """
+        This module will do the following:
+        1) Create the parameter object that matches the vendor.
+        2) Checks to make sure that no entry in the parameter dictionary is the empty string.
+        3) Checks to make sure that all required parameters are present and are of the correct type and properly
+           formats any dates.
+        4) Create the readings object for the vendor.
+        5) Gets the readings from the vendor API.
+        6) Gets the resp_raw object (which holds the data as it was received from the API) and converts it into a dictionary.
+        7) Gets the resp_transformed object (which hold the data after it has been transformed into a DB compatible format).
+
+        If there is an exception raised by the vendor parameter or readings classes, then this method will create an error message
+        which will be placed in the raw_data table to serve as an easily accessible log.
+        """
         if self.vendor == 'zentra':
             try:
                 zparam = ZentraParam(sn=self.params.get('sn', None),
@@ -174,9 +209,23 @@ class ApiWrapper:
 
 
 def get_reading(vendor: str, **params) -> json:
+    """
+    This method will call the vendor API and retrieve the data.
+
+    Returns
+    -------
+    The readings from the vendor API.
+    """
     params['vendor'] = vendor
     return ApiWrapper(params).get_reading()
 
 
 def get_version() -> str:
+    """
+    This module returns the version number of the mwapi package.
+
+    Returns
+    -------
+    The package version.
+    """
     return __version__
