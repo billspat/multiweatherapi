@@ -37,6 +37,37 @@ class RainwiseParam:
     """
     def __init__(self, username=None, sid=None, pid=None, mac=None, ret_form='json', interval=1,
                  start_datetime=None, end_datetime=None, tz=None, json_file=None, binding_ver=None):
+        """
+        This method initializes a RainwiseParam object.
+
+        Parameters
+        ----------
+        username       : str
+                         Registered group name (same as MAC).
+        sid            : str
+                         Site id, assigned by Rainwise.
+        pid            : str 
+                         Password id, assigned by Rainwise.
+        mac            : str
+                         MAC of the weather station. Must be in the group assigned to username.
+        ret_form       : str
+                         Values xml or json; returns the data as JSON or XML.
+        interval       : int
+                         Data aggregation interval (1, 5, 10, 15, 30, 60 minutes).
+        start_datetime : datetime
+                         The start date of the period being pulled from the API.  Defaults to None. 
+        end_datetime   : datetime
+                         The end date of the period being pulled from the API.  Defaults to None. 
+        tz             : str
+                         The time zone.  Defaults to None.
+        sensor_sn      : dict
+                         A dict of sensor serial numbers.  Defaults to None.
+        json_file      : str
+                         The path to a local json file to parse.  Defaults to None. 
+        binding_ver    : str
+                         The python binding version number.  Defaults to None.
+
+        """                 
         self.username = username
         self.sid = sid
         self.pid = pid
@@ -62,6 +93,16 @@ class RainwiseParam:
         self.__format_time()
 
     def __check_params(self):
+        """
+        This module is called by _process and checks that all the parameters that go to the API are present and of the
+        correct data type.
+
+        Raises
+        ------
+        Exception
+            If any parameter is missing or of an incorrect data type.
+        """
+
         tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
         if self.start_datetime and not isinstance(self.start_datetime, datetime):
             raise Exception('start_datetime must be datetime.datetime instance')
@@ -85,6 +126,10 @@ class RainwiseParam:
             raise Exception('ret_form must either be json or xml')
 
     def __utc_to_local(self):
+        """
+        This method converts a datetime object from UTC to the local time zone.
+        """
+
         tzlist = {
             'HT': 'US/Hawaii',
             'AT': 'US/Alaska',
@@ -116,6 +161,10 @@ class RainwiseParam:
         self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
     def __format_time(self):
+        """
+        This method makes sure that a datetime object is in the format "YYYY-MM-DD HH:MM:SS".
+        """
+
         self.__utc_to_local()
         self.start_datetime = self.start_datetime.strftime('%Y-%m-%d %H:%M:%S') if self.start_datetime \
             else datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -140,7 +189,8 @@ class RainwiseReadings:
 
     def __init__(self, param: RainwiseParam):
         """
-        Gets a device readings using a GET request to the Rainwise API.
+        This method initializes a RainwiseReadings object.
+
         Parameters
         ----------
         param : RainwiseParam
@@ -168,6 +218,11 @@ class RainwiseReadings:
         - Checks to make sure that the username, sid, pid, and mac parameters are present.
         - If there is a local JSON file to transform, then do so.
         - Gets the readings from the vendor API.
+
+        Raises
+        ------
+        Exception
+            If any of the parameters username, sid, pid, or mac are missing.
         """        
         if param.json_file:
             self.response = json.load(open(param.json_file))
@@ -190,8 +245,11 @@ class RainwiseReadings:
 
     def __get(self, username, sid, pid, mac, ret_form, interval, start_datetime=None, end_datetime=None):
         """
-        Gets a device readings using a GET request to the Rainwise API.
-        Wraps build and transform functions.
+        Gets a device readings from the Rainwise API via these steps:
+        1. Call __build to build the request.
+        2. Call __make_request to make the actual API call.
+        3. Call __transform to transform the API response into JSON.
+        
         Parameters
         ----------
         username : str
@@ -210,6 +268,10 @@ class RainwiseReadings:
             Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
         end_datetime : datetime
             Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
+
+        Returns
+        -------
+        A RainwiseReadings object.
         """
         self.__build(username, sid, pid, mac, ret_form, interval, start_datetime, end_datetime)
         self.__make_request()
@@ -218,7 +280,8 @@ class RainwiseReadings:
 
     def __build(self, username, sid, pid, mac, ret_form, interval, start_datetime=None, end_datetime=None):
         """
-        Gets a device readings using a GET request to the Rainwise API.
+        This method creates the request which will get sent to the API.
+
         Parameters
         ----------
         username : str
@@ -237,6 +300,10 @@ class RainwiseReadings:
             Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format
         end_datetime : datetime
             Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format
+
+        Returns
+        -------
+        A RainwiseReadings object.            
         """
         self.request = Request('GET',
                                url='http://api.rainwise.net/main/v1.5/registered/get-historical.php',
@@ -257,6 +324,10 @@ class RainwiseReadings:
     def __make_request(self):
         """
         Sends a token request to the Rainwise API and stores the response.
+
+        Returns
+        -------
+        A RainwiseReadings object.        
         """
         # prep response list
         self.response = list()
@@ -286,7 +357,11 @@ class RainwiseReadings:
 
     def __transform(self):
         """
-        Transform the response.
+        Transform the response into JSON and store it.
+
+        Returns
+        -------
+        A RainwiseReadings object.            
         """
         self.transformed_resp = utilities.init_transformed_resp(
             'rainwise',
