@@ -442,27 +442,61 @@
 <dt class="sig sig-object py" id="src.multiweatherapi.multiweatherapi.ApiWrapper">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">src.multiweatherapi.multiweatherapi.</span></span><span class="sig-name descname"><span class="pre">ApiWrapper</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.multiweatherapi.ApiWrapper" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is a wrapper for all the various vendor API classes that make up MWAPI.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="src.multiweatherapi.multiweatherapi.ApiWrapper.check_params">
 <span class="sig-name descname"><span class="pre">check_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.multiweatherapi.ApiWrapper.check_params" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This module checks to see if the vendor is specified in the parmeter dictionary and is in the list of approved vendors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>Exception</strong> – If the vendor is non-existent or is not in the list of approved vendors.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="src.multiweatherapi.multiweatherapi.ApiWrapper.get_reading">
 <span class="sig-name descname"><span class="pre">get_reading</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.multiweatherapi.ApiWrapper.get_reading" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This module will do the following:
+1) Create the parameter object that matches the vendor.
+2) Checks to make sure that no entry in the parameter dictionary is the empty string.
+3) Checks to make sure that all required parameters are present and are of the correct type and properly</p>
+<blockquote>
+<div><p>formats any dates.</p>
+</div></blockquote>
+<ol class="arabic simple" start="4">
+<li><p>Create the readings object for the vendor.</p></li>
+<li><p>Gets the readings from the vendor API.</p></li>
+<li><p>Gets the resp_raw object (which holds the data as it was received from the API) and converts it into a dictionary.</p></li>
+<li><p>Gets the resp_transformed object (which hold the data after it has been transformed into a DB compatible format).</p></li>
+</ol>
+<p>If there is an exception raised by the vendor parameter or readings classes, then this method will create an error message
+which will be placed in the raw_data table to serve as an easily accessible log.</p>
+</dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.multiweatherapi.multiweatherapi.get_reading">
-<span class="sig-prename descclassname"><span class="pre">src.multiweatherapi.multiweatherapi.</span></span><span class="sig-name descname"><span class="pre">get_reading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vendor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">&lt;module</span> <span class="pre">'json'</span> <span class="pre">from</span> <span class="pre">'C:\\Users\\robins80\\AppData\\Local\\Continuum\\anaconda3\\envs\\enviroweather\\lib\\json\\__init__.py'&gt;</span></span></span><a class="headerlink" href="#src.multiweatherapi.multiweatherapi.get_reading" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<span class="sig-prename descclassname"><span class="pre">src.multiweatherapi.multiweatherapi.</span></span><span class="sig-name descname"><span class="pre">get_reading</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vendor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">params</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">&lt;module</span> <span class="pre">'json'</span> <span class="pre">from</span> <span class="pre">'C:\\Users\\robins80\\AppData\\Local\\Continuum\\anaconda3\\envs\\sphinx\\lib\\json\\__init__.py'&gt;</span></span></span><a class="headerlink" href="#src.multiweatherapi.multiweatherapi.get_reading" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method will call the vendor API and retrieve the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The readings from the vendor API.</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.multiweatherapi.multiweatherapi.get_version">
 <span class="sig-prename descclassname"><span class="pre">src.multiweatherapi.multiweatherapi.</span></span><span class="sig-name descname"><span class="pre">get_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#src.multiweatherapi.multiweatherapi.get_version" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This module returns the version number of the mwapi package.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The package version.</p>
+</dd>
+</dl>
+</dd></dl>
 
 </section>
 <section id="module-src.multiweatherapi.onset">
@@ -528,31 +562,9 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.onset.OnsetParam.start_datetime_org">
-<span class="sig-name descname"><span class="pre">start_datetime_org</span></span><a class="headerlink" href="#src.multiweatherapi.onset.OnsetParam.start_datetime_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="src.multiweatherapi.onset.OnsetParam.start_datetime">
 <span class="sig-name descname"><span class="pre">start_datetime</span></span><a class="headerlink" href="#src.multiweatherapi.onset.OnsetParam.start_datetime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.onset.OnsetParam.end_datetime_org">
-<span class="sig-name descname"><span class="pre">end_datetime_org</span></span><a class="headerlink" href="#src.multiweatherapi.onset.OnsetParam.end_datetime_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>datetime</p>
@@ -743,34 +755,12 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.rainwise.RainwiseParam.start_datetime_org">
-<span class="sig-name descname"><span class="pre">start_datetime_org</span></span><a class="headerlink" href="#src.multiweatherapi.rainwise.RainwiseParam.start_datetime_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="src.multiweatherapi.rainwise.RainwiseParam.start_datetime">
 <span class="sig-name descname"><span class="pre">start_datetime</span></span><a class="headerlink" href="#src.multiweatherapi.rainwise.RainwiseParam.start_datetime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>datetime (UTC expected)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.rainwise.RainwiseParam.end_datetime_org">
-<span class="sig-name descname"><span class="pre">end_datetime_org</span></span><a class="headerlink" href="#src.multiweatherapi.rainwise.RainwiseParam.end_datetime_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
 </dd>
 </dl>
 </dd></dl>
@@ -903,17 +893,6 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.spectrum.SpectrumParam.start_datetime_org">
-<span class="sig-name descname"><span class="pre">start_datetime_org</span></span><a class="headerlink" href="#src.multiweatherapi.spectrum.SpectrumParam.start_datetime_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="src.multiweatherapi.spectrum.SpectrumParam.start_datetime">
 <span class="sig-name descname"><span class="pre">start_datetime</span></span><a class="headerlink" href="#src.multiweatherapi.spectrum.SpectrumParam.start_datetime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return readings for a specific customer device for a specific date-time range.
@@ -926,32 +905,10 @@
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.spectrum.SpectrumParam.end_datetime_org">
-<span class="sig-name descname"><span class="pre">end_datetime_org</span></span><a class="headerlink" href="#src.multiweatherapi.spectrum.SpectrumParam.end_datetime_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="src.multiweatherapi.spectrum.SpectrumParam.end_datetime">
 <span class="sig-name descname"><span class="pre">end_datetime</span></span><a class="headerlink" href="#src.multiweatherapi.spectrum.SpectrumParam.end_datetime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return readings for a specific customer device for a specific date-time range.
 (e.g., 2021-08-31 23:59)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.spectrum.SpectrumParam.date_org">
-<span class="sig-name descname"><span class="pre">date_org</span></span><a class="headerlink" href="#src.multiweatherapi.spectrum.SpectrumParam.date_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>datetime</p>
@@ -1109,9 +1066,46 @@ and others use ‘message’.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.check_empty_str">
+<span class="sig-name descname"><span class="pre">check_empty_str</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.utilities.Utilities.check_empty_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raises exception if any of the parameters are submitted with empty string.</p>
+<p>This method is implemented to prevent unexpected behaviors of weather station API when empty string
+is passed to one or more parameters. This method iterates all key value pairs in the parameter dictionary
+and if it encounters any empty string variable, it will raise exception.
+This method is called in the multiweatherapi.py right after Param object for specific vendor is
+instantiated. This decision is made to rely on Mike’s error handling routine to catch the exception
+raised from this method and generate output response properly</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input_param</strong> (<em>dict</em>) – A dictionary of parameters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.convert_to_dict">
 <span class="sig-name descname"><span class="pre">convert_to_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">davisParm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.utilities.Utilities.convert_to_dict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Takes a resp_raw list object and converts it to a straight dictionary.</p>
+<p>The resp_raw object starts off as a list, but it needs to be converted to a dictionary before it is written to the raw_data table.
+If this is a Davis station, we need to go through all the resp_raw items as each item in resp_raw is a new 24-hour slice of data.
+This is because Davis stations can only return 24 hours worth of data at a time, so it is called multiple times if we are pulling
+more than a day’s worth of data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>resp_raw</strong> (<em>list</em>) – The original resp_raw object.</p></li>
+<li><p><strong>davisParm</strong> (<a class="reference internal" href="#src.multiweatherapi.davis.DavisParam" title="src.multiweatherapi.davis.DavisParam"><em>DavisParam</em></a><em>, </em><em>optional</em>) – If present, these are the parameters used to call the Davis API.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>new_raw</strong> – The resp_raw object as a dictionary, with the information from the API call placed in the
+‘api_output’ entry.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>dict</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.create_error_response">
@@ -1119,13 +1113,156 @@ and others use ‘message’.</p>
 <dd><p>Create an error response that will get placed in the resp_raw field.</p>
 <p>This method came about because it was decided that the raw_data table can double as a log of sorts.  Therefore, it
 was necessary to change how mwapi handled exceptions.  Instead of throwing an exception, mwapi will call this method to create a
-list that can be</p>
+list that can be placed in the resp_raw attribute of the vendor class.  This is mostly for troubleshooting if there was a problem
+with either the passed parameters or the API call itself.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vendor</strong> (<em>str</em>) – The name of the vendor.</p></li>
+<li><p><strong>parms</strong> (<em>vendor parameter object</em>) – The parameters that were passed to the vendor API.</p></li>
+<li><p><strong>readings</strong> (<em>vendor readings object</em>) – The readings that were returned by the vendor API (if any).</p></li>
+<li><p><strong>error_msg</strong> (<em>str</em>) – The error message to place into resp_raw.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>return_list</strong> – A list of items that would have been returned if the API call was successful.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.expected_timestamp">
+<span class="sig-name descname"><span class="pre">expected_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">st_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ed_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">datetime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.utilities.Utilities.expected_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given start and end datetime, provides list of timestamps of measurement readings that are expected</p>
+<p>This method is implemented to provide expected data/time stamps of measurement readings for all
+weather station vendors. This information is used to know missing data points (if there is any) and
+calculate percentage of correct data rate when we summarize the readings for certain timeframe</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vendor</strong> (<em>str</em>) – Weather station vendor name</p></li>
+<li><p><strong>st_time</strong> (<em>datetime</em>) – Start datetime object (UTC)</p></li>
+<li><p><strong>ed_time</strong> (<em>datetime</em>) – End datetime object (UTC)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>datetime_list</strong> – Datetime object list that represents expected timestamps given start and end date/time</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.init_transformed_resp">
+<span class="sig-name descname"><span class="pre">init_transformed_resp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">st_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ed_time</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.utilities.Utilities.init_transformed_resp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize transformed response</p>
+<p>This method is used to create initial transformed response using expected timestamp list generated by
+expected_timestamp() method and fill</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>vendor</strong> (<em>str</em>) – Weather station vendor name</p></li>
+<li><p><strong>st_time</strong> (<em>datetime</em>) – Start datetime object (UTC)</p></li>
+<li><p><strong>ed_time</strong> (<em>datetime</em>) – End datetime object (UTC)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>measurement_list</strong> – Initialized transformed response list with None value for measurement readings</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.insert_resp">
+<span class="sig-name descname"><span class="pre">insert_resp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trasrec_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.utilities.Utilities.insert_resp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert measurement readings for a timestamp to transformed response list</p>
+<p>This method uses search_timestamp method to find the index of the specific date/time weather station data
+dictionary in the transformed response list and then fill in each measurement reading</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transformed_resp</strong> (<em>list</em>) – Transformed response list</p></li>
+<li><p><strong>trasrec_dict</strong> (<em>dict</em>) – measurement label and value pairs of a single timestamp</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>transformed_resp</strong> – Transformed response list</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.local_to_utc">
+<span class="sig-name descname"><span class="pre">local_to_utc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_timezone</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_datetime_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'%Y-%m-%d</span> <span class="pre">%H:%M:%S'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.utilities.Utilities.local_to_utc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts local date/time string to UTC datetime object</p>
+<p>This method is implemented to convert data/time string in various format and time-zone
+to a UTC datetime object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_datetime_str</strong> (<em>str</em>) – User input date/time string</p></li>
+<li><p><strong>local_timezone</strong> (<em>str</em>) – User’s current time zone (‘HT’: ‘US/Hawaii’, ‘AT’: ‘US/Alaska’, ‘PT’: ‘US/Pacific’,
+‘MT’: ‘US/Mountain’, ‘CT’: ‘US/Central’, ‘ET’: ‘US/Eastern’)</p></li>
+<li><p><strong>input_datetime_format</strong> (<em>str</em>) – User input date/time format codes(<a class="reference external" href="https://strftime.org/">https://strftime.org/</a>) default: ‘%Y-%m-%d %H:%M:%S’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>utc_datetime</strong> – UTC datetime object converted from user’s input date/time string</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>datetime</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.search_timestamp">
+<span class="sig-name descname"><span class="pre">search_timestamp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_datetime</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.utilities.Utilities.search_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns index of the specific measurement reading from transformed response that matches input timestamp</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>transf_resp</strong> (<em>list</em>) – Transformed response</p></li>
+<li><p><strong>input_datetime</strong> (<em>datetime</em>) – date/time of the measurement reading that you are trying to find</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>x</strong> – Index of the measurement reading from transformed response that matches input timestamp</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="src.multiweatherapi.utilities.Utilities.set_date">
 <span class="sig-name descname"><span class="pre">set_date</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.multiweatherapi.utilities.Utilities.set_date" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>This method will try to format the date that was sent to it. If the date sent is invalid, return that,
+so it will go into the error log correctly.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>date</strong> (<em>str</em><em> or </em><em>datetime</em>) – The date to be set.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>date</strong> – The properly formatted date if the date is a proper date, the original value otherwise.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -1160,31 +1297,9 @@ list that can be</p>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.zentra.ZentraParam.start_datetime_org">
-<span class="sig-name descname"><span class="pre">start_datetime_org</span></span><a class="headerlink" href="#src.multiweatherapi.zentra.ZentraParam.start_datetime_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="src.multiweatherapi.zentra.ZentraParam.start_datetime">
 <span class="sig-name descname"><span class="pre">start_datetime</span></span><a class="headerlink" href="#src.multiweatherapi.zentra.ZentraParam.start_datetime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>datetime</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt class="sig sig-object py" id="src.multiweatherapi.zentra.ZentraParam.end_datetime_org">
-<span class="sig-name descname"><span class="pre">end_datetime_org</span></span><a class="headerlink" href="#src.multiweatherapi.zentra.ZentraParam.end_datetime_org" title="Permalink to this definition">¶</a></dt>
-<dd><p>Stores datetime object passed initially</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>datetime</p>
