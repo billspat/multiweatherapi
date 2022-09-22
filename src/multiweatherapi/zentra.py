@@ -36,6 +36,32 @@ class ZentraParam:
     """
     def __init__(self, sn=None, token=None, start_datetime=None, end_datetime=None, tz=None, start_mrid=None,
                  end_mrid=None, json_file=None, binding_ver=None):
+
+        """
+        This module initializes a ZentraParam object.
+
+        Parameters
+        ----------
+        sn : str
+            The serial number of the device.
+        token : str
+            The user's access token.
+        start_datetime : datetime
+            Return readings with timestamps ≥ start_time. Specify start_time in Python Datetime format.
+        end_datetime : datetime
+            Return readings with timestamps ≤ end_time. Specify end_time in Python Datetime format.
+        tz : str
+            Time zone information
+        start_mrid : int
+            Return readings with mrid ≥ start_mrid.
+        end_mrid : int
+            Return readings with mrid ≤ start_mrid.
+        json_file : str
+            The path to a local json file to parse.
+        binding_ver : str
+            Python binding version.        
+        ----------
+        """                 
         self.sn = sn
         self.token = token
         self.start_datetime = start_datetime
@@ -58,6 +84,16 @@ class ZentraParam:
         self.__format_time()
 
     def __check_params(self):
+        """
+        This module is called by _process and checks that all the parameters that go to the API are present and of the
+        correct data type.
+
+        Raises
+        ------
+        Exception
+            If any parameter is missing or of an incorrect data type.
+        """
+
         tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
         if self.start_datetime and not isinstance(self.start_datetime, datetime):
             raise Exception('start_datetime must be datetime.datetime instance')
@@ -73,6 +109,10 @@ class ZentraParam:
             raise Exception('if start_datetime or end_datetime is specified, tz must be specified')
 
     def __utc_to_local(self):
+        """
+        This method converts a datetime object from UTC to the local time zone.
+        """
+
         tzlist = {
             'HT': 'US/Hawaii',
             'AT': 'US/Alaska',
@@ -102,6 +142,9 @@ class ZentraParam:
         self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
     def __format_time(self):
+        """
+        This module makes sure that the date is formatted as MM-DD-YYYY.
+        """
         self.__utc_to_local()
         self.start_datetime = self.start_datetime.strftime('%m-%d-%Y %H:%M') if self.start_datetime \
             else datetime.now().strftime('%m-%d-%Y %H:%M')
@@ -128,7 +171,8 @@ class ZentraReadings:
 
     def __init__(self, param: ZentraParam):
         """
-        Gets a device readings using a GET request to the Zentra API.
+        Initializes a ZentraReadings object.
+
         Parameters
         ----------
         param : ZentraParam
@@ -154,6 +198,16 @@ class ZentraReadings:
         - Checks to make sure that the sn and token parameters are both present.
         - If there is a local JSON file to transform, then do so.
         - Gets the readings from the vendor API.
+
+        Parameters
+        ----------
+        param : ZentraParam
+                The parameters that will be passed to the Zentra API.
+
+        Raises
+        ------
+        Exception
+           If the sn or token parameters are missing.
         """        
         if param.json_file:
             self.response = json.load(open(param.json_file))
@@ -176,8 +230,11 @@ class ZentraReadings:
 
     def __get(self, sn, token, start_datetime=None, end_datetime=None, start_mrid=None, end_mrid=None):
         """
-        Gets a device readings using a GET request to the Zentra API.
-        Wraps build and parse functions.
+        Gets device readings from the Zentra API via these steps:
+        1. Call __build to build the request.
+        2. Call __make_request to make the actual API call.
+        3. Call __transform to transform the API response into JSON.
+
         Parameters
         ----------
         sn : str
@@ -192,6 +249,10 @@ class ZentraReadings:
             Return readings with mrid ≥ start_mrid.
         end_mrid : int, optional
             Return readings with mrid ≤ start_mrid.
+
+        Returns
+        -------
+        A ZentraReadings object.            
         """
         self.__build(sn, token, start_datetime, end_datetime, start_mrid, end_mrid)
         self.__make_request()
@@ -200,7 +261,8 @@ class ZentraReadings:
 
     def __build(self, sn, token, start_datetime=None, end_datetime=None, start_mrid=None, end_mrid=None):
         """
-        Gets a device readings using a GET request to the Zentra API.
+        This method creates the request which will get sent to the API.
+
         Parameters
         ----------
         sn : str
@@ -215,6 +277,10 @@ class ZentraReadings:
             Return readings with mrid ≥ start_mrid.
         end_mrid : int, optional
             Return readings with mrid ≤ start_mrid.
+
+        Returns
+        -------
+        A ZentraReadings object.            
         """
         self.request = Request('GET',
                                url='https://zentracloud.com/api/v3/get_readings',
@@ -233,6 +299,10 @@ class ZentraReadings:
     def __make_request(self):
         """
         Sends a token request to the Zentra API and stores the response.
+
+        Returns
+        -------
+        A ZentraReadings object.        
         """
         # prep response list
         self.response = list()
@@ -269,7 +339,11 @@ class ZentraReadings:
 
     def __transform(self):
         """
-        Parses the response.
+        Transform the response into JSON and store it.
+
+        Returns
+        -------
+        A ZentraReadings object.        
         """
         def get_reading(data_list, list_index):
             if data_list is None:
