@@ -36,6 +36,29 @@ class SpectrumParam:
     """
     def __init__(self, sn=None, apikey=None, start_datetime=None, end_datetime=None, date=None, tz=None, count=None,
                  json_file=None, binding_ver=None):
+        """
+        This module initializes a new SpectrumParam object.
+
+        Parameters
+        ----------
+        sn             : str
+                         The station identifier.  Defaults to None.
+        apikey         : str
+                         The user's API access key.  Defaults to None. 
+        start_datetime : datetime
+                         The start date of the period being pulled from the API.  Defaults to None. 
+        end_datetime   : datetime
+                         The end date of the period being pulled from the API.  Defaults to None. 
+        date           : datetime
+        tz             : str
+                         The time zone.  Defaults to None.
+        count          : int
+                         The number of recent sensor data records to retrieve.
+        json_file      : str
+                         The path to a local json file to parse.  Defaults to None. 
+        binding_ver    : str
+                         The python binding version number.  Defaults to None.
+        """                 
         self.sn = sn
         self.apikey = apikey
         self.start_datetime = start_datetime
@@ -58,6 +81,16 @@ class SpectrumParam:
         self.__utc_to_local()
 
     def __check_params(self):
+        """
+        This module is called by _process and checks that all the parameters that go to the API are present and of the
+        correct data type.
+
+        Raises
+        ------
+        Exception
+            If any parameter is missing or of an incorrect data type.
+        """
+
         tz_option = ['HT', 'AT', 'PT', 'MT', 'CT', 'ET']
         if self.start_datetime and not isinstance(self.start_datetime, datetime):
             raise Exception('start_datetime must be datetime.datetime instance')
@@ -75,6 +108,10 @@ class SpectrumParam:
             raise Exception('if start_datetime or end_datetime is specified, tz must be specified')
 
     def __utc_to_local(self):
+        """
+        This method converts a datetime object from UTC to the local time zone.
+        """
+
         tzlist = {
             'HT': 'US/Hawaii',
             'AT': 'US/Alaska',
@@ -133,7 +170,7 @@ class SpectrumReadings:
     """
     def __init__(self, param: SpectrumParam):
         """
-        Gets a device readings using a GET request to the Spectrum API.
+        Initializes a SpectrumReadings object.
 
         Parameters
         ----------
@@ -160,6 +197,11 @@ class SpectrumReadings:
         - Checks to make sure that the sn and apikey parameters are both present.
         - If there is a local JSON file to transform, then do so.
         - Gets the readings from the vendor API.
+
+        Raises
+        ------
+        Exception
+            If the sn or apikey parameters are missing.
         """        
         if param.json_file:
             self.response = json.load(open(param.json_file))
@@ -181,8 +223,11 @@ class SpectrumReadings:
 
     def __get(self, sn, apikey, start_datetime=None, end_datetime=None, date=None, count=None):
         """
-        Gets a device readings using a GET request to the Spectrum API.
-        Wraps build and parse functions.
+        Gets a device readings from the Spectrum API via these steps:
+        1. Call __build to build the request.
+        2. Call __make_request to make the actual API call.
+        3. Call __transform to transform the API response into JSON.
+
         Parameters
         ----------
         sn : str
@@ -199,6 +244,10 @@ class SpectrumReadings:
             Return readings for a specific date. (e.g., 2021-08-01)
         count : int
             Get a specific number of recent sensor data records for a specific customer device
+
+        Returns
+        -------
+        A SpectrumReadings object.
         """
         self.__build(sn, apikey, start_datetime, end_datetime, date, count)
         self.__make_request()
@@ -207,7 +256,8 @@ class SpectrumReadings:
 
     def __build(self, sn, apikey, start_datetime=None, end_datetime=None, date=None, count=None):
         """
-        Gets a device readings using a GET request to the Spectrum API.
+        This method creates the request which will get sent to the API.
+
         Parameters
         ----------
         sn : str
@@ -224,6 +274,10 @@ class SpectrumReadings:
             Return readings for a specific date. (e.g., 2021-08-01)
         count : int
             Get a specific number of recent sensor data records for a specific customer device
+
+        Returns
+        -------
+        A SpectrumReadings object.
         """
         if count and count > 0:
             self.request = Request('GET',
@@ -251,6 +305,10 @@ class SpectrumReadings:
     def __make_request(self):
         """
         Sends a token request to the Spectrum API and stores the response.
+
+        Returns
+        -------
+        A SpectrumReadings object.        
         """
         # prep response list
         self.response = list()
@@ -290,7 +348,11 @@ class SpectrumReadings:
 
     def __transform(self):
         """
-        Parses the response.
+        Transform the response into JSON and store it.
+
+        Returns
+        -------
+        A SpectrumReadings object.        
         """
         self.transformed_resp = utilities.init_transformed_resp(
             'spectrum',
