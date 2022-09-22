@@ -35,6 +35,35 @@ class OnsetParam:
     """
     def __init__(self, sn=None, client_id=None, client_secret=None, ret_form=None, user_id=None, start_datetime=None,
                  end_datetime=None, tz=None, sensor_sn=None, json_file=None, binding_ver=None):
+        """
+        This method will initialize an OnsetParam object.
+
+        Parameters
+        ----------
+        sn             : str
+                         The station identifier.  Defaults to None.
+        client_id      : str
+                         Client specific id provided by Onset.  Defaults to None. 
+        client_secret  : str
+                         Client specific secret provided by Onset.  Defaults to None. 
+        ret_form       : str
+                         The format data should be returned in.  Defaults to None.
+        user_id        : str
+                         Numeric ID of the user account.
+        start_datetime : datetime
+                         The start date of the period being pulled from the API.  Defaults to None. 
+        end_datetime   : datetime
+                         The end date of the period being pulled from the API.  Defaults to None. 
+        tz             : str
+                         The time zone.  Defaults to None.
+        sensor_sn      : dict
+                         A dict of sensor serial numbers.  Defaults to None.
+        json_file      : str
+                         The path to a local json file to parse.  Defaults to None. 
+        binding_ver    : str
+                         The python binding version number.  Defaults to None.
+
+        """
         self.sn = sn
         self.client_id = client_id
         self.client_secret = client_secret
@@ -63,6 +92,16 @@ class OnsetParam:
         self.__get_auth()
 
     def __check_params(self):
+        """
+        This module is called by _process and checks that all the parameters that go to the API are present and of the
+        correct data type.
+
+        Raises
+        ------
+        Exception
+            If any parameter is missing or of an incorrect data type.
+        """
+
         if self.start_datetime and not isinstance(self.start_datetime, datetime):
             raise Exception('start_datetime must be datetime.datetime instance')
         if self.end_datetime and not isinstance(self.end_datetime, datetime):
@@ -88,6 +127,10 @@ class OnsetParam:
         self.path_param = {'format': self.ret_form, 'userId': self.user_id}
 
     def __utc_to_local(self):
+        """
+        This method converts a datetime object from UTC to the local time zone.
+        """
+
         tzlist = {
             'HT': 'US/Hawaii',
             'AT': 'US/Alaska',
@@ -116,6 +159,10 @@ class OnsetParam:
         self.cur_datetime = self.cur_datetime.replace(tzinfo=timezone.utc).astimezone(pytz.timezone(tzlist[self.tz]))
 
     def __format_time(self):
+        """
+        This method makes sure that a datetime object is in the format "YYYY-MM-DD HH:MM:SS".
+        """
+
         self.__utc_to_local()
         # self.start_datetime = self.start_datetime.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
         # if self.start_datetime \
@@ -127,6 +174,14 @@ class OnsetParam:
         self.cur_datetime = self.cur_datetime.strftime('%Y-%m-%d %H:%M:%S')
 
     def __get_auth(self):
+        """
+        This method gets authorization from Onset.
+
+        Raises
+        ------
+        Exception
+           If the return code is not 200.
+        """
         print('client_id: \"{}\"'.format(self.client_id))
         print('client_secret: \"{}\"'.format(self.client_secret))
         request = Request('POST',
@@ -165,7 +220,8 @@ class OnsetReadings:
 
     def __init__(self, param: OnsetParam):
         """
-        Gets a device readings using a GET request to the Onset API.
+        This method initializes an OnsetReadings object.
+
         Parameters
         ----------
         param : OnsetParam
@@ -191,6 +247,11 @@ class OnsetReadings:
         - Checks to make sure that the sn and access_token parameters are both present.
         - If there is a local JSON file to transform, then do so.
         - Gets the readings from the vendor API.
+
+        Raises
+        ------
+        Exception
+           If the sn or access_token parameters are missing.        
         """       
         if param.json_file:
             self.response = json.load(open(param.json_file))
@@ -212,8 +273,11 @@ class OnsetReadings:
 
     def __get(self, sn, access_token, path_param, start_datetime, end_datetime):
         """
-        Gets a device readings using a GET request to the Onset API.
-        Wraps build and parse functions.
+        Gets device readings from the Onset API via these steps:
+        1. Call __build to build the request.
+        2. Call __make_request to make the actual API call.
+        3. Call __transform to transform the API response into JSON.
+
         Parameters
         ----------
         sn : str
@@ -226,6 +290,10 @@ class OnsetReadings:
             Return readings with timestamps ≥ start_datetime.
         end_datetime : str
             Return readings with timestamps ≤ end_datetime.
+
+        Returns
+        -------
+        An OnsetReadings object.
         """
         self.__build(sn, access_token, path_param, start_datetime, end_datetime)
         self.__make_request()
@@ -235,6 +303,7 @@ class OnsetReadings:
     def __build(self, sn, access_token, path_param, start_datetime, end_datetime):
         """
         Gets a device readings using a GET request to the Onset API.
+        
         Parameters
         ----------
         sn : str
@@ -247,6 +316,10 @@ class OnsetReadings:
             Return readings with timestamps ≥ start_datetime.
         end_datetime : str
             Return readings with timestamps ≤ end_datetime.
+
+        Returns
+        -------
+        An OnsetReadings object.            
         """
         self.request = Request('GET',
                                url='https://webservice.hobolink.com/ws/data/file/{format}/user/{userId}'.format(
@@ -264,6 +337,10 @@ class OnsetReadings:
     def __make_request(self):
         """
         Sends a token request to the Onset API and stores the response.
+
+        Returns
+        -------
+        An OnsetReadings object.
         """
         # prep response list
         self.response = list()
@@ -299,7 +376,11 @@ class OnsetReadings:
 
     def __transform(self):
         """
-        Parses the response.
+        Transform the response into JSON and store it.
+
+        Returns
+        -------
+        An OnsetReadings object.        
         """
         # def search_timestamp(input_datetime):
         #     if self.transformed_resp is None:
