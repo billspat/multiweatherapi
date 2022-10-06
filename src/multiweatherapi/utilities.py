@@ -76,13 +76,14 @@ class Utilities:
         temp['error_msg'] = 'Bad Request: ' + error_msg
         temp['status_code'] = '400'
         temp['api_output'] = []
+        temp['status'] = 'ERROR'
 
         return_list = []
         return_list.append(temp)
 
         return return_list
 
-    def convert_to_dict(resp_raw, davisParm = None):
+    def convert_to_dict(resp_raw, resp_transformed = None, davisParm = None):
         """ 
         Takes a resp_raw list object and converts it to a straight dictionary. 
 
@@ -93,10 +94,12 @@ class Utilities:
 
         Parameters
         ----------
-        resp_raw  : list
-                    The original resp_raw object.
-        davisParm : DavisParam, optional
-                    If present, these are the parameters used to call the Davis API.
+        resp_raw         : list
+                           The original resp_raw object.
+        resp_transformed : list
+                           The transformed response data.                    
+        davisParm        : DavisParam, optional
+                           If present, these are the parameters used to call the Davis API.
 
         Returns
         ------- 
@@ -112,6 +115,13 @@ class Utilities:
             end = len(davisParm.date_tuple_list) - 1
             new_raw['start_datetime'] = datetime.fromtimestamp(davisParm.date_tuple_list[0][0], pytz.timezone('America/Detroit')).strftime('%Y-%m-%d %H:%M:%S')
             new_raw['end_datetime'] = datetime.fromtimestamp(davisParm.date_tuple_list[end][1], pytz.timezone('America/Detroit')).strftime('%Y-%m-%d %H:%M:%S')
+
+        # Check the status return code.  If it is not 200, set the status to "ERROR".  Otherwise, set it to "GOOD".
+
+        if str(resp_raw[0]['status_code']) == '200' and resp_transformed:
+            resp_raw[0]['status'] = "GOOD"
+        else:
+            resp_raw[0]['status'] = "ERROR"
 
         # Loop through the resp_raw items, starting with index 1.  If this is a Davis station, there could be multiple items.  
         # Append each item to a temporary dictionary.

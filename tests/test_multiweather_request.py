@@ -275,10 +275,13 @@ def test_api_transform(vendor, params):
              The vendor parameter object, which contains the parameters to be passed to the vendor API.
     """  
     readings = multiweatherapi.get_reading(vendor, **params)
+    print('*****DEBUG*****\nreadings returned for ' + vendor + ' are:')
+    import pprint
+    print('transformed:')
+    pprint.pprint(readings.resp_transformed)
+    print('*****DEBUG*****')
     assert readings.resp_transformed is not None, 'multiweatherapi did not return any parsed readings...'
     assert isinstance(readings.resp_transformed, list), 'response is not array type...'
-    print(readings.resp_transformed)
-    print(len(readings.resp_transformed))
     assert len(readings.resp_transformed) > 0, 'multiweatherapi returned no data...'
 
     # Loop through all the entries in resp_transformed, checking for the existence of the item and if it is of the correct type.
@@ -290,7 +293,8 @@ def test_api_transform(vendor, params):
         assert data.__contains__('data_datetime'), 'Record #' + str(index) + ' is missing a data_datetime entry...'
         assert data.__contains__('atemp'), 'Record #' + str(index) + ' is missing a atemp entry...'
         assert data.__contains__('pcpn'), 'Record #' + str(index) + ' is missing a pcpn entry...'
-        assert data.__contains__('relh'), 'Record #' + str(index) + ' is missing a relh entry...'    
+        assert data.__contains__('relh'), 'Record #' + str(index) + ' is missing a relh entry...'   
+        assert data['station_id'], 'Record #' + str(index) + ' is None...' 
         assert isinstance(data['station_id'], str), 'Record #' + str(index) + ' station_id entry is a ' + str(type(data['station_id'])) + ', not a str...'
         assert is_date(data['request_datetime']), 'Record #' + str(index) + ' request_datetime entry is not a valid datetime object...'
         assert is_date(data['data_datetime']), 'Record #' + str(index) + ' data_datetime entry is not a valid datetime object...'
@@ -361,8 +365,9 @@ def test_for_missing_parameters(vendor, params):
              A dictionary of parameters expected by the vendor API
     """
 
-    status_code_fail = ''
+    return_code_fail = ''
     error_msg_fail = ''
+    status_field_fail = ''
     valid_codes = ['400']
 
     for key in params:
@@ -370,15 +375,24 @@ def test_for_missing_parameters(vendor, params):
         temp.pop(key)
         results = multiweatherapi.get_reading(vendor, **temp)
         
+        print('*****DEBUG*****\ntest_for_missing_parameters')
+        print('The key is ' + key + ' and the returned status code is ' + str(results.resp_raw['status_code']))
+        import pprint
+        pprint.pprint(results.resp_raw)
+        print('*****DEBUG*****\ntest_for_missing_parameters')
         if str(results.resp_raw['status_code']) not in valid_codes:
-            status_code_fail += '[' + key + '-' + str(results.resp_raw['status_code']) + '] ' 
+            return_code_fail += '[' + key + '-' + str(results.resp_raw['status_code']) + '] ' 
 
         if results.resp_raw['error_msg'] == '':
             error_msg_fail += key + ' - '
 
-    assert status_code_fail == '', 'multiweatherapi failed to set status code for these missing parameters - ' + status_code_fail
+        if 'status' not in results.resp_raw or results.resp_raw.get('status') != "ERROR":
+            print('status = ' + results.resp_raw['status'])
+            status_field_fail += key + ' - '
 
-    assert error_msg_fail == '', 'multiweatherapi failed to set error message for these missing parameters - ' + status_code_fail
+    assert return_code_fail == '', 'multiweatherapi failed to set status code for these missing parameters - ' + return_code_fail
+    assert error_msg_fail == '', 'multiweatherapi failed to set error message for these missing parameters - ' + error_msg_fail
+    assert status_field_fail == '', 'multiweatherapi failed to set status field to ERROR for these missing parameters - ' + status_field_fail
 
 def test_for_bad_parameters(vendor, params):
     """
@@ -396,8 +410,9 @@ def test_for_bad_parameters(vendor, params):
              A dictionary of parameters expected by the vendor API
     """
 
-    status_code_fail = ''
+    response_code_fail = ''
     error_msg_fail = ''
+    status_field_fail = ''
     valid_codes = ['400', '401', '403', '404']
 
     for key in params:
@@ -410,15 +425,26 @@ def test_for_bad_parameters(vendor, params):
             temp[key] = 'bad_data'
             results = multiweatherapi.get_reading(vendor, **temp)
 
+            print('*****DEBUG*****\ntest_for_bad_parameters')
+            print('The key is ' + key + ' and the returned status code is ' + str(results.resp_raw['status_code']))
+            import pprint
+            pprint.pprint(results.resp_raw)
+            print(type(results.resp_raw))
+            print('*****DEBUG*****\ntest_for_bad_parameters')
+
             if str(results.resp_raw['status_code']) not in valid_codes:
-                status_code_fail += '[' + key + '-' + str(results.resp_raw['status_code']) + '] '
+                response_code_fail += '[' + key + '-' + str(results.resp_raw['status_code']) + '] '
 
             if results.resp_raw['error_msg'] == '' and results.resp_raw:
                 error_msg_fail += key + ' - '
 
-    assert status_code_fail == '', 'multiweatherapi failed to set status code when setting bad values for parameters - ' + status_code_fail
+            if 'status' not in results.resp_raw or results.resp_raw.get('status') != "ERROR":
+                print('status = ' + results.resp_raw['status'])
+                status_field_fail += key + ' - '             
 
-    assert error_msg_fail == '', 'multiweatherapi failed to set error message when setting bad values for parameters - ' + status_code_fail
+    assert response_code_fail == '', 'multiweatherapi failed to set status code when setting bad values for parameters - ' + response_code_fail
+    assert error_msg_fail == '', 'multiweatherapi failed to set error message when setting bad values for parameters - ' + response_code_fail
+    assert status_field_fail == '', 'multiweatherapi failed to set status field to ERROR for these missing parameters - ' + status_field_fail
 
 # def test_bad_auth(vendor, params):
 #     first_param = list(params.keys())[0]

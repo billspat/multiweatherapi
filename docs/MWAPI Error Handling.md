@@ -17,9 +17,17 @@ API errors occur when the API being called has encountered an error.  These erro
 ## MWAPI Error Handling Process
 When MWAPI encounters an API error that needs to be reported out to the caller for placement in the raw_data table, the following process will be followed:
 1. A "status_code" dictionary entry will be placed in the response object that contains the status code returned by the API.
-2. A "error_mdg" dictionary entry will be placed in the response object that contains the error message returned by the API.
-3. Any transformation of data will be bypassed as there most likely will be no data to process.
-4. The response object will be returned to the calling module, which will place that information in the raw_data table.
+2. A "error_msg" dictionary entry will be placed in the response object that contains the error message returned by the API.
+3. A status field will be added to the raw_data table, which will contain one of these values:
+   GOOD if data was returned from the vendor.
+   ERROR if no data was returned from the vendor API call.  This could be due to: 
+   * Missing or bad parameters
+   * API failure
+   * The vendor API returned a 200, but there was no data
+4. Any transformation of data will be bypassed as there most likely will be no data to process.
+5. The response object will be returned to the calling module, which will place that information in the raw_data table.
+6. The raw data will be placed in the raw_data table.  This entry will contain the status code and any error messages.
+7. A secondary process will be run, either manually or on a to-be-determined schedule that will look for entries with "ERROR" in the status field and call the vendor API to see if that missing data can be retrieved.
 
 ## Information that will be stored in the raw_data table:
 The following data will be always placed in the raw_data table:
