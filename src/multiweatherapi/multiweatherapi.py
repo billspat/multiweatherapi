@@ -79,8 +79,8 @@ class ApiWrapper:
                 zreadings = ZentraReadings(zparam)
                 zreadings._process(zparam)
                 self.resp_raw = zreadings.response
-                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
                 self.resp_transformed = zreadings.transformed_resp
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw, self.resp_transformed)
                 self.resp_debug = zreadings.debug_info
             except Exception as error:
                 zreadings = ZentraReadings(zparam)
@@ -102,8 +102,8 @@ class ApiWrapper:
                 dreadings = DavisReadings(dparam)
                 dreadings._process(dparam)
                 self.resp_raw = dreadings.response
-                self.resp_raw = Utilities.convert_to_dict(self.resp_raw, dparam)
                 self.resp_transformed = dreadings.transformed_resp
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw, self.resp_transformed, dparam)
                 self.resp_debug = dreadings.debug_info
             except Exception as error:
                 dreadings = DavisReadings(dparam)
@@ -125,8 +125,8 @@ class ApiWrapper:
                 sreadings = SpectrumReadings(sparam)
                 sreadings._process(sparam)
                 self.resp_raw = sreadings.response
-                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
                 self.resp_transformed = sreadings.transformed_resp
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw, self.resp_transformed)
                 self.resp_debug = sreadings.debug_info
             except Exception as error:
                 sreadings = SpectrumReadings(sparam)
@@ -150,8 +150,8 @@ class ApiWrapper:
                 oreadings = OnsetReadings(oparam)
                 oreadings._process(oparam)
                 self.resp_raw = oreadings.response
-                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
                 self.resp_transformed = oreadings.transformed_resp
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw, self.resp_transformed)
                 self.resp_debug = oreadings.debug_info
             except Exception as error:
                 oreadings = OnsetReadings(oparam)
@@ -175,8 +175,8 @@ class ApiWrapper:
                 rreadings = RainwiseReadings(rparam)
                 rreadings._process(rparam)
                 self.resp_raw = rreadings.response
-                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
-                self.resp_transformed = rreadings.transformed_resp
+                self.resp_transformed = rreadings.transformed_resp              
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw, self.resp_transformed)
                 self.resp_debug = rreadings.debug_info
             except Exception as error:
                 rreadings = RainwiseReadings(rparam)
@@ -198,8 +198,8 @@ class ApiWrapper:
                 creadings = CampbellReadings(cparam)
                 creadings._process(cparam)
                 self.resp_raw = creadings.response
-                self.resp_raw = Utilities.convert_to_dict(self.resp_raw)
-                self.resp_transformed = creadings.transformed_resp 
+                self.resp_transformed = creadings.transformed_resp
+                self.resp_raw = Utilities.convert_to_dict(self.resp_raw, self.resp_transformed) 
                 self.resp_debug = creadings.debug_info
             except Exception as error:
                 creadings = CampbellReadings(cparam)
