@@ -17,3 +17,4 @@ env.bak/
 .spyderproject
 .spyproject
 .idea/
+.venv
